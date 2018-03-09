@@ -94,7 +94,7 @@ def twittertargets(page=1):
 
             addTarget = models.TWITTER(title=form.title.data, searchString='', creator=form.creator.data, targetType='User',
                                        description=form.description.data, subject=form.subject.data, status=form.status.data,lastCrawl=None, totalTweets=0,
-                                       added=datetime.now(), woeid=None, index=form.index.data, schedule=None, scheduleInterval=None)
+                                       added=datetime.now(), woeid=None, index=form.index.data, schedule=None, scheduleInterval=None, scheduleText = None)
 
             addLog = models.CRAWLLOG(tag_title=form.title.data,event_start=datetime.now(), event_text='ADDED TO DB')
             addTarget.logs.append(addLog)
@@ -145,7 +145,7 @@ def addtwittertrend(id):
                                    creator='', targetType='Search',
                                    description='', subject='',
                                    status='1', lastCrawl=None, totalTweets=0,
-                                   added=datetime.now(), woeid=None, index='0', schedule=None, scheduleInterval=None)
+                                   added=datetime.now(), woeid=None, index='0', schedule=None, scheduleInterval=None, scheduleText = None)
 
         addLog = models.CRAWLLOG(tag_title=id, event_start=datetime.now(), event_text='Added to database')
         addLog2 = models.CRAWLLOG(tag_title=id, event_start=datetime.now(), event_text='Manually added from Trend monitoring')
@@ -212,7 +212,7 @@ def twittersearchtargets(page=1):
             addTarget = models.TWITTER(title=form.title.data, searchString=form.searchString.data, creator=form.creator.data, targetType='Search',
                                        description=form.description.data, subject=form.subject.data,
                                        status=form.status.data, lastCrawl=None, totalTweets=0,
-                                       added=datetime.now(), woeid=None, index=form.index.data, schedule=None, scheduleInterval=None)
+                                       added=datetime.now(), woeid=None, index=form.index.data, schedule=None, scheduleInterval=None, scheduleText = None)
             addLog = models.CRAWLLOG(tag_title=form.title.data, event_start=datetime.now(), event_text='ADDED TO DB')
             addTarget.logs.append(addLog)
             db.session.add(addTarget)
@@ -240,7 +240,7 @@ def collections(page=1):
                                        description=collectionForm.description.data, subject=collectionForm.subject.data,
                                        status=collectionForm.status.data, inclDateStart=collectionForm.inclDateStart.data,
                                        inclDateEnd=collectionForm.inclDateStart.data, lastCrawl=None,
-                                       totalTweets=0, added=datetime.now(),schedule=None, scheduleInterval=None)
+                                       totalTweets=0, added=datetime.now(),schedule=None, scheduleInterval=None, scheduleText = None)
 
             #addLog = models.CRAWLLOG(tag_title=form.title.data, event_start=datetime.now(),
             #                         event_text='ADDED TO DB')
@@ -304,7 +304,7 @@ def userlist(id,page=1):
             addTarget = models.TWITTER(title=form.title.data,searchString='' ,creator=form.creator.data, targetType='User',
                                        description=form.description.data, subject=form.subject.data,
                                        status=form.status.data, lastCrawl=None, totalTweets=0,
-                                       added=datetime.now(), woeid=None, index=form.index.data, schedule=None, scheduleInterval=None)
+                                       added=datetime.now(), woeid=None, index=form.index.data, schedule=None, scheduleInterval=None , scheduleText = None)
 
             addLog = models.CRAWLLOG(tag_title=form.title.data, event_start=datetime.now(), event_text='ADDED TO DB')
             addTarget.logs.append(addLog)
@@ -334,7 +334,7 @@ def searchlist(id,page=1):
             addTarget = models.TWITTER(title=form.title.data,searchString='' ,creator=form.creator.data, targetType='User',
                                        description=form.description.data, subject=form.subject.data,
                                        status=form.status.data, lastCrawl=None, totalTweets=0,
-                                       added=datetime.now(), woeid=None, index=form.index.data, schedule=None, scheduleInterval=None)
+                                       added=datetime.now(), woeid=None, index=form.index.data, schedule=None, scheduleInterval=None , scheduleText = None)
             addLog = models.CRAWLLOG(tag_title=form.title.data, event_start=datetime.now(), event_text='ADDED TO DB')
             addTarget.logs.append(addLog)
             db.session.add(addTarget)
@@ -410,6 +410,7 @@ def collectionDetail(id, page=1):
         if object.schedule:
             scheduler.cancel(object.schedule)
         object.schedule = jobId
+        object.scheduleText = schedForm.schedule.data
         scheduler.schedule(
             scheduled_time=datetime.utcnow(),  # Time for first execution, in UTC timezone
             func=startScheduleCollectionCrawl,  # Function to be queued
@@ -446,7 +447,7 @@ def collectionDetail(id, page=1):
                                        targetType='User',
                                        description=targetForm.description.data, subject=targetForm.subject.data,
                                        status=targetForm.status.data, lastCrawl=None, totalTweets=0,
-                                       added=datetime.now(), woeid=None, index=targetForm.index.data, schedule=None, scheduleInterval=None)
+                                       added=datetime.now(), woeid=None, index=targetForm.index.data, schedule=None, scheduleInterval=None, scheduleText = None)
 
             addLog = models.CRAWLLOG(tag_title=targetForm.title.data, event_start=datetime.now(), event_text='ADDED TO DB')
             #addTarget.logs.append(addLog)
@@ -469,7 +470,7 @@ def collectionDetail(id, page=1):
                                        description=searchApiForm.description.data, subject=searchApiForm.subject.data,
                                        status=searchApiForm.status.data, lastCrawl=None, totalTweets=0,
                                        added=datetime.now(), woeid=None, index=searchApiForm.index.data,
-                                       schedule=None, scheduleInterval=None)
+                                       schedule=None, scheduleInterval=None, scheduleText = None)
 
             addLog = models.CRAWLLOG(tag_title=targetForm.title.data, event_start=datetime.now(),
                                      event_text='ADDED TO DB')
