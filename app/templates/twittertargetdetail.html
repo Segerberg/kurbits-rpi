@@ -1,0 +1,269 @@
+{% extends "base.html" %}
+{% block head %}
+{% endblock %}
+
+{% block pageHeader %}
+{% if TWITTER.targetType == 'User' %}<a href="{{ url_for('userlist',page=1, id=TWITTER.title)}}" class="name">@{{ TWITTER.title }} </a>{%else%}<a href="{{ url_for('searchlist',page=1, id=TWITTER.row_id)}}" class="name">{{ TWITTER.title }} </a>{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <i class="fa fa-twitter fa-fw"></i> Description
+
+                <div class="btn-group pull-right">
+                     <button type="button" class="btn btn-primary btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Actions <span class="caret"></span></button>
+                     <ul class="dropdown-menu">
+                         <li><a href="{{ url_for('startTwitterCrawl', id=TWITTER.row_id) }}"><i class="fa fa-download fa-fw"></i> Archive</a></li>
+                         <li role="separator" class="divider"></li>
+                         <li><a href="{{ url_for('removeTwitterTarget', id=TWITTER.row_id) }}"><i class="fa fa-trash fa-fw"></i> Delete</a></li>
+                     </ul>
+                 </div>
+
+            </div>
+            <div class="panel-body">
+                <ul class="list-unstyled">
+                    {% if TWITTER.targetType == 'User' %}
+                    <li><b style="color:grey"> Username:</b> {{ TWITTER.title }}</li>
+                    <li><b style="color:grey"> Creator:</b> {{ TWITTER.creator }}</li>
+                    <li><b style="color:grey"> Keywords:</b> {{ TWITTER.subject }}</li>
+                    <li><b style="color:grey"> Description</b> {{ TWITTER.description }}</li>
+                    <li><b style="color:grey">Type</b> {{ TWITTER.targetType }}</li>
+                    <li><b style="color:grey">Status</b> {% if TWITTER.status == '1' %} Active {% else %} Closed {% endif %}</li>
+                    <li><b style="color:grey">Index</b> {{ TWITTER.index }}</li>
+                    {% else %}
+                    <li><b style="color:grey"> Title:</b> {{ TWITTER.title }}</li>
+                    <li><b style="color:grey"> Search String:</b> {{ TWITTER.searchString }}</li>
+                    <li><b style="color:grey"> Creator:</b> {{ TWITTER.creator }}</li>
+                    <li><b style="color:grey"> Keywords:</b> {{ TWITTER.subject }}</li>
+                    <li><b style="color:grey"> Description</b> {{ TWITTER.description }}</li>
+                    <li><b style="color:grey">Type</b> {{ TWITTER.targetType }}</li>
+                    <li><b style="color:grey">Status</b> {% if TWITTER.status == '1' %} Active {% else %} Closed {% endif %}</li>
+                    <li><b style="color:grey">Index</b> {{ TWITTER.index }}</li>
+                    {% endif %}
+                </ul>
+                <h5><span class="label label-default">Metadata</span></h5>
+                <ul class="list-unstyled">
+                    <li><b style="color:grey">Archived Tweets:</b> {{ TWITTER.totalTweets }}</li>
+                    <li><b style="color:grey">Added:</b> {{ TWITTER.added.strftime('%Y-%m-%d %H:%M:%S') }}</li>
+                    <li><b style="color:grey">Last Archived:</b> {% if TWITTER.lastCrawl == None %}<td>-</td>{% else %}<td>{{ TWITTER.lastCrawl.strftime('%Y-%m-%d')}}</td>{% endif %}</li>
+                </ul>
+                <h5><span class="label label-default">Associated Collections</span></h5>
+                <table>
+                    <tr>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                    {% for collection in linkedCollections %}
+                    <tr>
+                        <td><a href={{url_for('collectionDetail', page="1", id=collection.row_id)}}><i class="fa fa-link" aria-hidden="true"></i> {{ collection.title }}</a><a href="{{ url_for('removeCollectionAssociation', id=collection.row_id, target=TWITTER.row_id) }}"></a></td>
+                        <td><form method="post" onclick="return confirm('Are you sure you wan't to remove this target from collection?');"action="{{ url_for('removeCollectionAssociation', id=collection.row_id, target=TWITTER.row_id) }}">
+                            <button class="btn btn-danger btn-xs pull-left" type="submit" id="togglee">  <i class="fa fa-trash" aria-hidden="true"></button></form></td>
+                    </tr>
+                    {% endfor %}
+                </table>
+                <button class="btn btn-primary btn-xs pull-right" data-toggle="modal" data-target="#myModal">Edit</button>
+
+                            <!-- Modal -->
+                <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                <h4 class="modal-title" id="myModalLabel"><i class="fa fa-pencil" aria-hidden="true"></i>EDIT</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form-group">
+                                    <form action="" method="post" name="auth_name">
+                                        {{ form.hidden_tag() }}
+                                        <label for="title"data-toggle="popover" title="Title" data-placement="left" data-content="TBD">Title</label>
+                                        {{form.title(class="form-control",id="title")}}
+                                </div>
+                                {% if TWITTER.targetType == 'Search' %}
+                                <div class="form-group">
+                                    <label for="searchString" data-toggle="popover" title="searchString" data-placement="left" data-content="TBD">Search String</label>
+                                    {{form.searchString(class="form-control", id="searchString")}}
+                                </div>
+                                {% endif %}
+                                <div class="form-group">
+                                    <label for="tagcreator" data-toggle="popover" title="tagcreator" data-placement="left" data-content="TBD">Creator</label>
+                                    {{form.creator(class="form-control", id="tagcrator")}}
+                                </div>
+                                <div class="form-group">
+                                    <label for="description" data-toggle="popover" title="Description" data-placement="left" data-content="TBD">Description</label>
+                                    {{form.description(class="form-control", id="description")}}
+                                </div>
+                                <div class="form-group">
+                                    <label for="subject" data-toggle="popover" title="Subject" data-placement="left" data-content="TBD">Keywords</label>
+                                    {{form.subject(class="form-control", id="subject")}}
+                                </div>
+                                <div class="form-group">
+                                    <label for="status" data-toggle="popover" title="Status" data-placement="left" data-content="TBD">Status</label>
+                                    {{form.status(class="form-control", id="status")}}
+                                </div>
+                                <div class="form-group pull-left">
+                                    <label for="index" data-toggle="popover" title="index" data-placement="left" data-content="TBD">Index</label>
+                                    {{form.index(class="form-control", id="index")}}
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                                <input class="btn btn-default" type="submit" value="Spara">
+                            </div>
+                        </div>
+                            </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+ <div class="row">
+     <div class="col-lg-4">
+         <div class="panel panel-default">
+             <div class="panel-heading">
+                 <i class="fa fa-book fa-fw"></i> Add target to collection
+             </div>
+             <div class="panel-body">
+                 <form action="" method="post" name="auth_name">
+                     {{ assForm.hidden_tag() }}
+                     <div class="form-group">
+                         <label for="searchString" data-toggle="popover" title="searchString" data-placement="left" data-content="TBD">Available Collections</label>
+                         {{assForm.assoc(class="form-control", id="assoc")}}
+                     </div>
+                     <button class="btn btn-primary btn-xs pull-right"type="submit">Add to collection!</i></button>
+                 </form>
+
+             </div>
+         </div>
+     </div>
+
+
+     <div class="col-lg-8">
+         <div class="panel panel-default">
+             <div class="panel-heading">
+                 <i class="fa fa-book fa-fw"></i> EXPORTS
+                 <div class="btn-group pull-right">
+                     <button type="button" class="btn btn-primary btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Create <span class="caret"></span></button>
+                     <ul class="dropdown-menu">
+                         <li><a href="{{ url_for('dehydrate', id=TWITTER.row_id) }}"><i class="fa fa-tint fa-fw"></i> Dehydrate</a></li>
+                         <li><a href="{{ url_for('wordc', id=TWITTER.row_id) }}"><i class="fa fa-cloud fa-fw"></i> Wordcloud</a></li>
+                          {% if TWITTER.targetType == 'User' %}<li><a href="{{ url_for('followers', id=TWITTER.row_id) }}"><i class="fa fa-users fa-fw"></i> Followers</a></li> {% endif %}
+                        <li><a href="{{ url_for('hash', id=TWITTER.row_id) }}"><i class="fa fa-hashtag fa-fw"></i> Hashtags</a></li>
+                         {% if TWITTER.targetType == 'Search' %} <li><a href="{{ url_for('top_users', id=TWITTER.row_id) }}"><i class="fa fa-user fa-fw"></i> Top Users</a></li> {% endif %}
+                         <li><a href="{{ url_for('urls', id=TWITTER.row_id) }}"><i class="fa fa-cloud fa-fw"></i> Urls</a></li>
+
+                     </ul>
+                 </div>
+             </div>
+             <div class="panel-body">
+                 <div class="table-responsive">
+                 <table class="table table-bordered">
+                     <thead>
+                     <tr>
+                         <th><i class="fa fa-download fa-fw"></i> Export</th>
+                         <th><i class="fa fa-clock-o fa-fw"></i>Time</th>
+                         <th><i class="fa fa-rocket fa-fw"></i>Actions</th>
+                         <th><i class="fa fa-twitter fa-fw"></i>No</th>
+                     </tr>
+                     </thead>
+                     <tbody>
+                     {% for EXPORT in EXPORTS %}
+                     <tr>
+                         <td><a href="{{ url_for('export', filename=EXPORT.url)}}" target="_blank">{{ EXPORT.type}}</a></td>
+                         {% if EXPORT.exported == None %}
+                         <td>N/A</td>
+                         {% else %}
+                         <td>{{ EXPORT.exported.strftime('%Y-%m-%d %H:%M:%S')}}</td>
+                         <td><a href="{{ url_for('deleteexport', filename=EXPORT.url)}}"><i class="fa fa-trash fa-fw"></i></a></td>
+                         {% endif %}
+                         {% if EXPORT.count == None %}
+                         <td>N/A</td>
+                         {% else %}
+                         <td>{{EXPORT.count}}</td>
+                         {% endif %}
+
+                     </tr>
+                             {% endfor %}
+                     </tbody>
+                 </table>
+                 </div>
+             </div>
+         </div>
+     </div>
+
+
+     <div class="col-lg-12">
+         <div class="panel panel-default">
+             <div class="panel-heading"><a data-toggle="collapse" href="#collapse1">
+                 <i class="fa fa-book fa-fw"></i> EVENT LOG </a>
+             </div>
+             <div class="panel-body">
+                 <div id="collapse1" class="panel-collapse collapse in">
+                     <div class="dataTable_wrapper">
+                         <div class="table-responsive">
+                         <table class="table table-striped table-bordered table-hover" id="dataTables-example">
+                             <thead>
+                                 <tr>
+                                     <th>Date</th>
+                                     <th>Event</th>
+                                 </tr>
+                             </thead>
+                             <tbody>
+                             {% for LOG in CRAWLLOG %}
+                             <tr>
+                                 <td>{{ LOG.event_start.strftime('%Y-%m-%d %H:%M:%S')}}</td>
+                                 <td>{{ LOG.event_text}}</td>
+                             </tr>
+                             {% endfor %}
+                             </tbody>
+                         </table>
+                             </div>
+                     </div>
+                 </div>
+             </div>
+         </div>
+     </div>
+ </div>
+<script>
+ $(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+})
+</script>
+<script>
+$(function () {
+  $('[data-toggle="popover"]').popover()
+})
+</script>
+<script>
+$(document).ready(function() {
+    $('#dataTables-example').DataTable( {
+        stateSave: false,
+        aLengthMenu: [
+        [10,25, 50, 100, -1],
+        [10,25, 50, 100, "All"]],
+        responsive: true,
+        "language": {
+            "lengthMenu": "Show _MENU_ ",
+            "zeroRecords": "found nothing...",
+            "info": "showing _PAGE_ of _PAGES_",
+            "infoEmpty": "No records to show",
+            "infoFiltered": "(filtred from total _MAX_ records)",
+             "paginate": {
+             "first":      "First",
+             "last":       "Last",
+             "next":       "Next",
+             "previous":   "Previous"
+
+    },
+        "search": "Search",
+        }
+
+    } );
+} );
+ </script>
+<script>$('.collapse').collapse()</script>
+{% endblock %}
