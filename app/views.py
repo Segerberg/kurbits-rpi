@@ -608,19 +608,10 @@ Route to call collection twarc-archive
 @app.route('/startcollectioncrawl/<id>', methods=['GET','POST'])
 def startCollectionCrawl(id):
     with app.app_context():
+        jobId = str(uuid.uuid4())
         flash(u'Archiving started!', 'success')
-        collectionLastCrawl = models.COLLECTION.query.get(id)
-        collectionLastCrawl.lastCrawl = datetime.now()
-        linkedTargets = models.COLLECTION.query. \
-            filter(models.COLLECTION.row_id == id). \
-            first(). \
-            tags
-        for target in linkedTargets:
-            last_crawl = models.TWITTER.query.get(target.row_id)
-            last_crawl.lastCrawl = datetime.now()
-            db.session.commit()
-            q.enqueue(twittercrawl, target.row_id, timeout=86400)
-        db.session.close()
+        q.enqueue(startScheduleCollectionCrawl, id, timeout=86400)
+
         return redirect(url_for('collectionDetail', id=id, page=1))
 
 '''

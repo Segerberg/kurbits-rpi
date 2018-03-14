@@ -19,3 +19,5 @@ def startScheduleCollectionCrawl(id):
             db.session.commit()
             q.enqueue(twittercrawl, target.row_id, timeout=86400)
         db.session.close()
+
+
