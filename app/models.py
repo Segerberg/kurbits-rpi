@@ -24,6 +24,7 @@ class TWITTER(db.Model):
     index = db.Column(db.Boolean)
     schedule = db.Column(db.String(250))
     scheduleInterval = db.Column(db.Integer)
+    scheduleText = db.Column(db.String(250))
     logs = db.relationship("CRAWLLOG", backref='twitter', lazy=True, cascade="save-update, merge, delete")
     exports = db.relationship("EXPORTS", backref='twitter_us_exports', lazy=True, cascade="save-update, merge, delete")
     tags = db.relationship('COLLECTION', secondary=assoc_twitter_collections,back_populates='tags', lazy='subquery')
@@ -31,7 +32,7 @@ class TWITTER(db.Model):
 
 
 
-    def __init__(self, title, searchString, creator, targetType, description, subject, status, lastCrawl, totalTweets, added, woeid, index,schedule, scheduleInterval):
+    def __init__(self, title, searchString, creator, targetType, description, subject, status, lastCrawl, totalTweets, added, woeid, index,schedule, scheduleInterval,scheduleText):
         self.title = title
         self.searchString = searchString
         self.creator = creator
@@ -46,6 +47,7 @@ class TWITTER(db.Model):
         self.schedule = schedule
         self.totalTweets = totalTweets
         self.scheduleInterval = scheduleInterval
+        self.scheduleText = scheduleText
 
 class COLLECTION(db.Model):
     __tablename__ = 'COLLECTION'
@@ -91,9 +93,12 @@ class TRENDS_LOC(db.Model):
     row_id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(250))
     loc =  db.Column(db.String(250))
+    schedule = db.Column(db.String(250))
+    scheduleInterval = db.Column(db.Integer)
+    scheduleText = db.Column(db.String(250))
     trends = db.relationship("TWITTER_TRENDS", backref='twitter_trends', lazy=True, cascade="save-update, merge, delete")
 
-    def __init__(self,name, loc):
+    def __init__(self,name, loc, schedule, scheduleInterval,scheduleText):
         self.name = name
         self.loc = loc
 

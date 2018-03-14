@@ -17,6 +17,7 @@
                      <button type="button" class="btn btn-primary btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Actions <span class="caret"></span></button>
                      <ul class="dropdown-menu">
                          <li><a href="{{ url_for('startTwitterCrawl', id=TWITTER.row_id) }}"><i class="fa fa-download fa-fw"></i> Archive</a></li>
+                         <li><a data-toggle="modal" href="#myModal" data-target="#myModal"><i class="fa fa-pencil fa-fw"></i> Edit</a></li>
                          <li role="separator" class="divider"></li>
                          <li><a href="{{ url_for('removeTwitterTarget', id=TWITTER.row_id) }}"><i class="fa fa-trash fa-fw"></i> Delete</a></li>
                      </ul>
@@ -30,16 +31,13 @@
                     <li><b style="color:grey"> Creator:</b> {{ TWITTER.creator }}</li>
                     <li><b style="color:grey"> Keywords:</b> {{ TWITTER.subject }}</li>
                     <li><b style="color:grey"> Description</b> {{ TWITTER.description }}</li>
-                    <li><b style="color:grey">Type</b> {{ TWITTER.targetType }}</li>
                     <li><b style="color:grey">Status</b> {% if TWITTER.status == '1' %} Active {% else %} Closed {% endif %}</li>
                     <li><b style="color:grey">Index</b> {{ TWITTER.index }}</li>
                     {% else %}
                     <li><b style="color:grey"> Title:</b> {{ TWITTER.title }}</li>
                     <li><b style="color:grey"> Search String:</b> {{ TWITTER.searchString }}</li>
-                    <li><b style="color:grey"> Creator:</b> {{ TWITTER.creator }}</li>
                     <li><b style="color:grey"> Keywords:</b> {{ TWITTER.subject }}</li>
                     <li><b style="color:grey"> Description</b> {{ TWITTER.description }}</li>
-                    <li><b style="color:grey">Type</b> {{ TWITTER.targetType }}</li>
                     <li><b style="color:grey">Status</b> {% if TWITTER.status == '1' %} Active {% else %} Closed {% endif %}</li>
                     <li><b style="color:grey">Index</b> {{ TWITTER.index }}</li>
                     {% endif %}
@@ -64,7 +62,7 @@
                     </tr>
                     {% endfor %}
                 </table>
-                <button class="btn btn-primary btn-xs pull-right" data-toggle="modal" data-target="#myModal">Edit</button>
+
 
                             <!-- Modal -->
                 <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
@@ -87,10 +85,12 @@
                                     {{form.searchString(class="form-control", id="searchString")}}
                                 </div>
                                 {% endif %}
+                                {% if TWITTER.targetType == 'User' %}
                                 <div class="form-group">
                                     <label for="tagcreator" data-toggle="popover" title="tagcreator" data-placement="left" data-content="TBD">Creator</label>
                                     {{form.creator(class="form-control", id="tagcrator")}}
                                 </div>
+                                {% endif %}
                                 <div class="form-group">
                                     <label for="description" data-toggle="popover" title="Description" data-placement="left" data-content="TBD">Description</label>
                                     {{form.description(class="form-control", id="description")}}

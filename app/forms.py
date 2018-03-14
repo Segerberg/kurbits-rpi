@@ -46,7 +46,8 @@ class twitterTrendForm(FlaskForm):
 class stopWordsForm(FlaskForm):
     stopWord = StringField(u'Stop Word', validators=[DataRequired()])
 
-class scheduleForm(FlaskForm):
-    schedule = SelectField(u'Schedule', choices=[('604800', 'Weekly'), ('86400', 'Daily'),('43200', 'Twice a day'),
+SCHEDULE_CHOICES = [('604800', 'Weekly'), ('86400', 'Daily'),('43200', 'Twice a day'),
                                             ('21600', 'Four times a day'),('10800', 'Every third hour'),
-                                            ('3600', 'Hourly'),('60', 'minute')])
+                                            ('3600', 'Hourly'),('60', 'minute')]
+class scheduleForm(FlaskForm):
+    schedule = SelectField(u'Schedule', choices=SCHEDULE_CHOICES)

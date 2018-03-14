@@ -9,7 +9,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>TwarcUI</title>
+    <title>Kurbits</title>
      <!-- Font-Awesome -->
     <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
 
@@ -40,10 +40,17 @@
                     <span class="sr-only">Toggle navigation</span>
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
                 </button>
+                <a href="/" class="navbar-brand"><img style="max-width:100px; max-height:50px; margin-top: -16px;" src="{{ url_for('static', filename='logo_small.png')}}"></a>
+            </div>
+               <ul class="nav navbar-top-links navbar-right">
+                   <li>
 
-                <a class="navbar-brand" href="/"><i class="fa fa-twitter fa-1x"></i> TwarcUI</a>
+                <span class="badge" style="margin-top: 16px"><span id="q"><i class="fa fa-spinner fa-spin pull-left" aria-hidden="true"></i></span></span>
+                <!--<a class="navbar-brand" href="/"><i class="fa fa-twitter fa-1x"></i> Kurbits</a>-->
+               </li>
+               </ul>
 
                     </div>
 
@@ -75,7 +82,7 @@
                             <a href="#"><i class="fa fa-wrench fa-fw"></i>Tools</a>
                         </li>
                          <li>
-                            <a href="/settings"><i class="fa fa-cogs fa-fw"></i>Settings</a>
+                            <a href="/settings"><i class="fa fa-cogs fa-fw"></i>System</a>
                         </li>
 
                     </ul>
@@ -132,6 +139,16 @@
             </div>
         </div>
  </div>
+                          <script>
+                    function update_values() {
+                     $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+                     $.getJSON($SCRIPT_ROOT+"/_qmonitor",
+                     function(data) {
+                     $("#q").text(data.qlen)
+                });
 
+        }
+setInterval(update_values, 3000)
+                    </script>
 </body>
 </html>

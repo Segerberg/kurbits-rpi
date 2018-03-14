@@ -20,6 +20,7 @@
                      <ul class="dropdown-menu">
                          <li><a href="{{ url_for('startCollectionCrawl', id=object.row_id) }}"><i class="fa fa-download fa-fw"></i> Archive</a></li>
                          <li><a data-target="#schedModal" data-toggle="modal"  href="#schedModal"><i class="fa fa-calendar fa-fw"></i> Schedule</a></li>
+                         <li><a data-toggle="modal" href="#myModal" data-target="#myModal"><i class="fa fa-pencil fa-fw"></i> Edit</a></li>
                          <li role="separator" class="divider"></li>
                          <li><a href="{{ url_for('removeCollection', id=object.row_id) }}" onclick="return confirm('Are you sure you want to delete this collection?');" ><i class="fa fa-trash fa-fw"></i> Delete</a></li>
                      </ul>
@@ -35,13 +36,20 @@
                     <li><b style="color:grey">Collection Type:</b> {{ object.collectionType }}</li>
                     <li><b style="color:grey"> Description:</b> {{ object.description }}</li>
                     <li><b style="color:grey"> Keywords:</b> {{ object.subject }}</li>
-                    <li><b style="color:grey">Status</b> {% if object.status == '1' %}Active {% else %} Closed {% endif %}</li>
+                    <li><b style="color:grey">Status:</b> {% if object.status == '1' %}Active {% else %} Closed {% endif %}</li>
                  <h5><span class="label label-default">Inclusive Dates</span></h5>
                     <li><b style="color:grey">Start Date</b>{% if object.inclDateStart != None %} {{ object.inclDateStart.strftime('%Y-%m-%d')}}{% else %} - {% endif %}</li>
                     <li><b style="color:grey">End Date</b>{% if object.inclDateEnd != None %} {{ object.inclDateEnd.strftime('%Y-%m-%d')}}{% else %} - {% endif %}</li>
+                {% if object.schedule != None %}<h5><span class="label label-default">Schedule</span></h5>
+                     <li><b style="color:grey">Runs:</b> {{ object.scheduleText }}</li>
+
+
+
+                    {% endif %}
+
 
                 </ul>
-                <button class="btn btn-primary pull-right btn-xs" data-toggle="modal" data-target="#myModal">Edit</button>
+
                 <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
                     <div class="modal-dialog">
                         <div class="modal-content">
@@ -123,7 +131,7 @@
         </div>
         </form>
     </div>
-</div>
+    </div></div>
      <h5><div class="modal fade" id="targetModal" tabindex="-1" role="dialog" aria-labelledby="targetModalLabel" aria-hidden="true">
          <div class="modal-dialog">
              <div class="modal-content">

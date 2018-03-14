@@ -14,16 +14,20 @@
     <div class="panel panel-default">
         <div class="panel-heading clearfix"><a data-toggle="collapse" href="#collapse1">
             <i class="fa fa-globe fa-fw"></i> Trend map</a>
-            <div class="btn-group pull-right">
-            <button class="btn btn-primary btn-xs " data-toggle="modal" data-target="#trendModal">Add Location</button>
-            </div>
+             <div class="btn-group pull-right">
+                     <button type="button" class="btn btn-primary btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Actions <span class="caret"></span></button>
+                     <ul class="dropdown-menu">
+                         <li><a data-toggle="modal" href="#trendModal" data-target="#trendModal"><i class="fa fa-globe fa-fw"></i> Add Location</a></li>
+                         <li><a href="{{ url_for('refreshtwittertrend')}}"><i class="fa fa-refresh fa-fw"></i> Refresh</a></li>
+                     </ul>
+                 </div>
+
 
         </div>
         <div id="collapse1" class="panel-collapse">
             <div class="panel-body">
                 <div id="map" style="height: 400px;"></div>
-                <form action="{{ url_for('refreshtwittertrend')}}" method="post" name="auth_name">
-                <button class="btn btn-success btn-xs pull-right" type="submit"><i class="fa fa-refresh" aria-hidden="true"></i>Refresh Trends</button></form>
+
             </div>
         </div>
     </div>
@@ -78,8 +82,9 @@
         <div class="panel-heading"><a data-toggle="collapse" href="#{{l.row_id}}">
             {% if l.name == none %}<i class="fa fa-spinner fa-spin fa-fw"></i> {{l.loc}} {% else %}<i class="fa fa-line-chart fa-fw"></i> {{l.name}}
             {% endif %}</a>
-      <a href="{{ url_for('cleartwittertrend', id=l.row_id) }}" class="btn btn-warning btn-xs pull-right" role="button"><i class="fa fa-eraser fa-fw"></i></a>
-        <a href="{{ url_for('deleteTrendLocation', id=l.row_id) }}" class="btn btn-danger btn-xs pull-right" role="button"><i class="fa fa-trash fa-fw"></i></a>
+
+      <a href="{{ url_for('cleartwittertrend', id=l.row_id) }}" class="btn btn-warning btn-xs pull-right" role="button" onclick="return confirm('Are you sure?')"><i class="fa fa-eraser fa-fw"></i></a>
+        <a href="{{ url_for('deleteTrendLocation', id=l.row_id) }}" class="btn btn-danger btn-xs pull-right" role="button" onclick="return confirm('Are you sure?')"><i class="fa fa-trash fa-fw"></i></a>
 
         </div>
 
@@ -97,7 +102,7 @@
                         {% if t.saved == False %}<span class="pull-right text-muted small"> <form action="{{ url_for('addtwittertrend', id=t.name) }}" method="post" name="auth_name">
                         <button class="btn btn-primary btn-xs pull-right" type="submit"><i class="fa fa-plus" aria-hidden="true"></i></button></form></span>{% else %}<span class="pull-right text-muted small">
                         <form action="{{ url_for('removetwittertrend', id=t.name) }}" method="post" name="auth_name">
-                        <button class="btn btn-danger btn-xs pull-right" type="submit"><i class="fa fa-trash" aria-hidden="true"></i></button></form></span>{%endif%}{%endif%}
+                        <button class="btn btn-danger btn-xs pull-right" type="submit" ><i class="fa fa-trash" aria-hidden="true"></i></button></form></span>{%endif%}{%endif%}
                     </a>
                     {%endfor%}
 

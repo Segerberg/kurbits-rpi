@@ -3,7 +3,7 @@
 {% if twitterTarget.targetType == "Search" %}
 <a href="{{ url_for('twittertargetDetail',  id=twitterTarget.row_id) }}">{{twitterTarget.title}}</a>
 {% else %}
-<a href="{{ url_for('twittertargetDetail',  id=twitterTarget.row_id) }}">@{{id}}</a> {% if not twitterTarget %}<button class="btn btn-default pull-right" data-toggle="modal" data-target="#myModal">Add</button>{% endif %}
+{% if twitterTarget %}<a href="{{ url_for('twittertargetDetail',  id=twitterTarget.row_id) }}">@{{id}}</a>{% else %} @{{id}} {% endif %} {% if not twitterTarget %}<button class="btn btn-default pull-right" data-toggle="modal" data-target="#myModal">Add</button>{% endif %}
 {% endif %}
 <!-- Modal -->
 <h5>
@@ -100,12 +100,13 @@
 {% if results.has_next %}<li><a href="{{ url_for('searchlist', page=results.next_num, id=id) }}">&raquo;</a></li>{% else %}{% endif %}
 </ul>
 {% endif %}
-
+{% if twitterTarget.targetType == "User" %}
 <ul class = "pagination">
 {% if results.has_prev %}<li><a href="{{ url_for('userlist', page=results.prev_num, id=id) }}">&laquo;</a></li>{% else %}{% endif %}
 {% for page in results.iter_pages() %}{% if page == None %} {% else %}  <li><a href="{{ url_for('userlist', page=page, id=id) }}">{{page}}</a></li>{% endif %}{% endfor %}
 {% if results.has_next %}<li><a href="{{ url_for('userlist', page=results.next_num, id=id) }}">&raquo;</a></li>{% else %}{% endif %}
 </ul>
+{% endif %}
 {% endif %}
 <style>
 article.tweet {

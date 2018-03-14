@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 from app import app, render_template, request,db, url_for, redirect,flash,Response,jsonify, send_from_directory
 from app import models
-from .forms import twitterTargetForm, SearchForm, twitterCollectionForm, collectionAddForm, twitterTrendForm, stopWordsForm, scheduleForm
+from .forms import twitterTargetForm, SearchForm, twitterCollectionForm, collectionAddForm, twitterTrendForm, stopWordsForm, scheduleForm,SCHEDULE_CHOICES
 from sqlalchemy.exc import IntegrityError
 from .twarcUIarchive import twittercrawl
 from .twitterTrends import getTrends
@@ -20,22 +20,39 @@ from rq import Queue
 from rq.worker import Worker
 from rq_scheduler import Scheduler
 import os
+import psutil
 import uuid
 from .decorators import async
 
 q = Queue(connection=Redis())
 scheduler = Scheduler(connection=Redis())
-
-'''@app.before_first_request
+@app.before_first_request
 def before_first_request():
-    scheduler.schedule(
-        scheduled_time=datetime.utcnow(),  # Time for first execution, in UTC timezone
-        func=getTrends,  # Function to be queued
-        interval=900,  # Time before the function is called again, in seconds
-        repeat=None,  # Repeat this number of times (None means repeat forever)
-        id='testar'
-    )'''
+    COLLECTIONS = models.COLLECTION.query.all()
 
+    for collection in COLLECTIONS:
+        if collection.schedule:
+            scheduler.cancel(collection.schedule)
+            scheduler.schedule(
+                scheduled_time=datetime.utcnow(),  # Time for first execution, in UTC timezone
+                func=startScheduleCollectionCrawl,  # Function to be queued
+                args=[collection.row_id],
+                interval=collection.scheduleInterval,  # Time before the function is called again, in seconds
+                repeat=None,  # Repeat this number of times (None means repeat forever)
+                id=collection.schedule
+            )
+
+
+
+
+    scheduler.cancel('trendSchedule')
+    scheduler.schedule(
+        scheduled_time=datetime.utcnow(),
+        func=getTrends,
+        interval=900,
+        repeat=None,
+        id='trendSchedule'
+    )
 
 
 @app.before_request
@@ -48,7 +65,6 @@ def before_request():
 @app.route('/')
 @app.route('/index', methods=['GET', 'POST'])
 def index():
-    workers = Worker.all(connection=Redis())
     twitterUserCount = models.TWITTER.query.filter(models.TWITTER.status == '1').filter(models.TWITTER.targetType=='User').count()
     twitterSearchCount = models.TWITTER.query.filter(models.TWITTER.status == '1').filter(models.TWITTER.targetType == 'Search').count()
     collectionCount = models.COLLECTION.query.filter(models.COLLECTION.status=='1').count()
@@ -58,7 +74,8 @@ def index():
     if request.method == 'POST':
         return redirect((url_for('search_results', form=form, query=form.search.data)))
 
-    return render_template("index.html", twitterUserCount=twitterUserCount, twitterSearchCount=twitterSearchCount, collectionCount=collectionCount,trendsCount=trendsCount, CRAWLLOG=CRAWLLOG, workers=workers, qlen=len(q), form=form)
+    return render_template("index.html", twitterUserCount=twitterUserCount, twitterSearchCount=twitterSearchCount, collectionCount=collectionCount,trendsCount=trendsCount, CRAWLLOG=CRAWLLOG,  qlen=len(q), form=form)
+
 
 '''SEARCH'''
 @app.route('/search', methods=['GET', 'POST'])
@@ -118,12 +135,14 @@ def twittertrends():
     loc = models.TRENDS_LOC.query.all()
     trend = models.TWITTER_TRENDS.query.filter(models.TWITTER_TRENDS.collected > filterTime).all()
     trendAll = models.TWITTER_TRENDS.query.order_by(models.TWITTER_TRENDS.collected.desc()).all()
-    #CRAWLLOG = models.CRAWLLOG.query.order_by(models.CRAWLLOG.row_id.desc()).limit(10).all()
     trendForm = twitterTrendForm(prefix='trendform')
     form = twitterTargetForm(prefix='form')
+    schedForm = scheduleForm(prefix='schedForm')
+
+
 
     if request.method == 'POST' and trendForm.validate_on_submit():
-        addloc = models.TRENDS_LOC(name=None,loc=trendForm.geoloc.data)
+        addloc = models.TRENDS_LOC(name=None,loc=trendForm.geoloc.data,schedule=None, scheduleInterval=None, scheduleText=None)
         db.session.add(addloc)
         db.session.commit()
         q.enqueue(getTrends)
@@ -134,6 +153,8 @@ def twittertrends():
         return redirect((url_for('twittertrends')))
 
     return render_template("trends.html", loc=loc, trend=trend, trendForm=trendForm, form=form, trendAll=trendAll, MAP_VIEW = MAP_VIEW, MAP_ZOOM=MAP_ZOOM)
+
+
 
 """Route to add Trend to Search"""
 @app.route('/addtwittertrend/<id>', methods=['GET', 'POST'])
@@ -405,12 +426,12 @@ def collectionDetail(id, page=1):
     schedForm = scheduleForm(prefix="schedForm")
 
     if request.method == 'POST' and schedForm.validate_on_submit():
-        print("YAY")
         jobId = str(uuid.uuid4())
         if object.schedule:
             scheduler.cancel(object.schedule)
         object.schedule = jobId
-        object.scheduleText = schedForm.schedule.data
+        object.scheduleText = dict(SCHEDULE_CHOICES).get(schedForm.schedule.data)
+
         scheduler.schedule(
             scheduled_time=datetime.utcnow(),  # Time for first execution, in UTC timezone
             func=startScheduleCollectionCrawl,  # Function to be queued
@@ -577,9 +598,8 @@ def startTwitterCrawl(id):
 """Route to monitor if job is in queue"""
 @app.route('/_qmonitor', methods=['GET', 'POST'])
 def qmonitor():
-    workers = Worker.all(connection=Redis(REDIS_DB))
 
-    return jsonify(qlen=len(q), wlen=len(workers))
+    return jsonify(qlen=len(q))
 
 '''
 Route to call collection twarc-archive
@@ -745,14 +765,25 @@ def settings():
     stopForm = stopWordsForm()
 
     if request.method == 'POST' and stopForm.validate_on_submit():
-        print (request.path)
+
         add_stop_words = models.STOPWORDS(stop_word=stopForm.stopWord.data, lang=None)
         db.session.add(add_stop_words)
         db.session.commit()
         flash(u'{} was added to Stop word list!'.format(stopForm.stopWord.data), 'success')
         return redirect(request.referrer)
+    diskList = []
 
-    return render_template("settings.html", stopWords = stopWords, stopForm = stopForm)
+    #DISKS
+    for mountPoint in psutil.disk_partitions():
+        x = dict(p=psutil.disk_usage(mountPoint[1])[3], n=mountPoint[0], f=str(psutil.disk_usage(mountPoint[1])[2]/ (1024.0 ** 3)))
+        print (x)
+        diskList.append(x)
+
+    #REDIS
+    workers = Worker.all(connection=Redis())
+
+
+    return render_template("settings.html", stopWords = stopWords, stopForm = stopForm, diskList=diskList, workers=workers,qlen=len(q))
 
 
 '''Route to remove stop word'''
@@ -797,3 +828,7 @@ def uploadStopWords():
         db.session.commit()
         flash(u'{} stop words added!'.format(lineCount), 'success')
         return redirect(request.referrer)
+
+
+
+

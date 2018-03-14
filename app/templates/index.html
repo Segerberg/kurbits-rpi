@@ -137,7 +137,7 @@
         <div id="collapse3" class="panel-collapse collapse in">
             <div class="panel-body">
                 <div class="list-group">
-                    <span class="list-group-item">Twitter job queue <span class="badge">{{qlen}}</span>
+                    <span class="list-group-item">Twitter job queue <span class="badge"><span id="q"><i class="fa fa-spinner fa-spin pull-left" aria-hidden="true"></i></span></span>
 
 
 
@@ -146,65 +146,19 @@
         </div>
     </div>
 </div>
- <div class="col-lg-9">
-     {% if workers == []%}
-     <div class="panel panel-danger">
-     {% else %}
-    <div class="panel panel-success">
-        {% endif%}
-        <div class="panel-heading"><a data-toggle="collapse" href="#collapse2">
-            <i class="fa fa-cog fa-fw"></i> Workers</a>
-        </div>
-        <div id="collapse2" class="panel-collapse collapse in">
-            <div class="panel-body">
-                <div class="list-group">
-                     {% if workers == []%}
-                     Hmmm... No workers alive, please start a worker.py and <a href="{{ url_for('index')}}">reload</a> this page!
-                     {% else %}
-                    <table class="table table-bordered">
-                        <tr>
-                            <th>Worker</th>
-                            <th>Alive Since</th>
-                            <th>Successful jobs</th>
-                            <th>Failed jobs</th>
-                            <th>Working time</th>
-                        </tr>
-                        {% for worker in workers %}
-                         <tr>
-                             <td>{{worker.name}}</td>
-                             <td>{{worker.birth_date.strftime('%Y-%m-%d %H:%M:%S')}}</td>
-                             <td>{{worker.successful_job_count}}</td>
-                             <td>{{worker.failed_job_count}}</td>
-                             <td>{{worker.total_working_time}}</td>
 
-
-
-                         </tr>
-                         {% endfor %}
-
-                    </table>
-                    {% endif%}
-
-
-
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 
 <script>$('.collapse').collapse()</script>
-                                        <!--<script>
+                                        <script>
                     function update_values() {
                      $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
                      $.getJSON($SCRIPT_ROOT+"/_qmonitor",
                      function(data) {
                      $("#q").text(data.qlen)
-                     $("#w").text(data.wlen)
                 });
 
         }
 setInterval(update_values, 3000)
-                    </script>-->
+                    </script>
 {% endblock %}
 
