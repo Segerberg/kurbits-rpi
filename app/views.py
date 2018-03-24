@@ -13,8 +13,9 @@ from .dehydrate import dehydrateUserSearch,dehydrateCollection
 from .wordcloud import wordCloud, wordCloudCollection
 from .urls import urlsUserSearch, urlsCollection
 from .scheduleCollection import startScheduleCollectionCrawl
-from config import POSTS_PER_PAGE, REDIS_DB, MAP_VIEW,MAP_ZOOM,TARGETS_PER_PAGE,EXPORTS_BASEDIR
+from config import POSTS_PER_PAGE, REDIS_DB, MAP_VIEW,MAP_ZOOM,TARGETS_PER_PAGE,EXPORTS_BASEDIR,ARCHIVE_BASEDIR
 from datetime import datetime, timedelta
+from time import sleep
 from redis import Redis
 from rq import Queue
 from rq.worker import Worker
@@ -377,7 +378,7 @@ def twittertargetDetail(id):
 
     TWITTER = models.TWITTER.query.filter(models.TWITTER.row_id == id).first()
     object = models.TWITTER.query.get_or_404(id)
-    CRAWLLOG = models.CRAWLLOG.query.order_by(models.CRAWLLOG.row_id.desc()).filter(models.CRAWLLOG.tag_id==id)
+    CRAWLLOG = models.CRAWLLOG.query.order_by(models.CRAWLLOG.event_start.desc()).filter(models.CRAWLLOG.tag_id==id).limit(1)
     EXPORTS = models.EXPORTS.query.order_by(models.EXPORTS.row_id.desc()).filter(models.EXPORTS.twitter_id==id)
     form = twitterTargetForm(prefix='form',obj=object)
     assForm = collectionAddForm(prefix="assForm")
@@ -385,6 +386,9 @@ def twittertargetDetail(id):
         filter(models.TWITTER.row_id == id). \
         first(). \
         tags
+    l = []
+
+
     if request.method == 'POST' and assForm.validate_on_submit():
         object.tags.append(assForm.assoc.data)
         db.session.commit()
@@ -407,7 +411,7 @@ def twittertargetDetail(id):
 
 
 
-    return render_template("twittertargetdetail.html", TWITTER=TWITTER, form=form, CRAWLLOG=CRAWLLOG, EXPORTS=EXPORTS, linkedCollections=linkedCollections, assForm=assForm)
+    return render_template("twittertargetdetail.html", TWITTER=TWITTER, form=form, CRAWLLOG=CRAWLLOG, EXPORTS=EXPORTS, linkedCollections=linkedCollections, assForm=assForm, l=l)
 
 '''Route to detail view of collections'''
 @app.route('/collectiondetail/<id>/<int:page>', methods=['GET', 'POST'])
@@ -590,10 +594,7 @@ def startTwitterCrawl(id):
         object = models.TWITTER.query.get_or_404(id)
         q.enqueue(twittercrawl, id, timeout=86400)
         return redirect(request.referrer)
-        #if object.targetType == "Search":
-        #    return redirect('/twittersearchtargets/1')
-        #else:
-        #    return redirect('/twittertargets/1')
+
 
 """Route to monitor if job is in queue"""
 @app.route('/_qmonitor', methods=['GET', 'POST'])
@@ -604,7 +605,7 @@ def qmonitor():
 '''
 Route to call collection twarc-archive
 '''
-@async
+
 @app.route('/startcollectioncrawl/<id>', methods=['GET','POST'])
 def startCollectionCrawl(id):
     with app.app_context():
@@ -819,6 +820,7 @@ def uploadStopWords():
         db.session.commit()
         flash(u'{} stop words added!'.format(lineCount), 'success')
         return redirect(request.referrer)
+
 
 
 
