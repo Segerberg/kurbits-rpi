@@ -13,9 +13,8 @@ from .dehydrate import dehydrateUserSearch,dehydrateCollection
 from .wordcloud import wordCloud, wordCloudCollection
 from .urls import urlsUserSearch, urlsCollection
 from .scheduleCollection import startScheduleCollectionCrawl
-from config import POSTS_PER_PAGE, REDIS_DB, MAP_VIEW,MAP_ZOOM,TARGETS_PER_PAGE,EXPORTS_BASEDIR,ARCHIVE_BASEDIR
+from config import POSTS_PER_PAGE, REDIS_DB, MAP_VIEW,MAP_ZOOM,TARGETS_PER_PAGE,EXPORTS_BASEDIR,ARCHIVE_BASEDIR, TREND_UPDATE
 from datetime import datetime, timedelta
-from time import sleep
 from redis import Redis
 from rq import Queue
 from rq.worker import Worker
@@ -23,7 +22,6 @@ from rq_scheduler import Scheduler
 import os
 import psutil
 import uuid
-from .decorators import async
 
 q = Queue(connection=Redis())
 scheduler = Scheduler(connection=Redis())
@@ -50,7 +48,7 @@ def before_first_request():
     scheduler.schedule(
         scheduled_time=datetime.utcnow(),
         func=getTrends,
-        interval=900,
+        interval=TREND_UPDATE,
         repeat=None,
         id='trendSchedule'
     )
@@ -101,8 +99,7 @@ TWITTER
 '''USER-TIMELINES'''
 @app.route('/twittertargets/<int:page>', methods=['GET', 'POST'])
 def twittertargets(page=1):
-    #TWITTER = models.TWITTER.query.filter(models.TWITTER.status == '1').filter(models.TWITTER.targetType=='User')
-    TWITTER = models.TWITTER.query.filter(models.TWITTER.targetType=='User').order_by(models.TWITTER.title).paginate(page, TARGETS_PER_PAGE,False)
+    TWITTER = models.TWITTER.query.filter(models.TWITTER.targetType=='User').filter(models.TWITTER.status==1).order_by(models.TWITTER.title).paginate(page, TARGETS_PER_PAGE,False)
     form = twitterTargetForm(prefix='form')
 
     if request.method == 'POST'and form.validate_on_submit():
@@ -126,6 +123,34 @@ def twittertargets(page=1):
             db.session.rollback()
 
     return render_template("twittertargets.html", TWITTER=TWITTER, form=form)
+
+'''USER-TIMELINES-CLOSED'''
+@app.route('/twittertargetsclosed/<int:page>', methods=['GET', 'POST'])
+def twittertargetsclosed(page=1):
+    TWITTER = models.TWITTER.query.filter(models.TWITTER.targetType=='User').filter(models.TWITTER.status==0).order_by(models.TWITTER.title).paginate(page, TARGETS_PER_PAGE,False)
+    form = twitterTargetForm(prefix='form')
+
+    if request.method == 'POST'and form.validate_on_submit():
+
+        try:
+
+
+            addTarget = models.TWITTER(title=form.title.data, searchString='', creator=form.creator.data, targetType='User',
+                                       description=form.description.data, subject=form.subject.data, status=form.status.data,lastCrawl=None, totalTweets=0,
+                                       added=datetime.now(), woeid=None, index=form.index.data, schedule=None, scheduleInterval=None, scheduleText = None)
+
+            addLog = models.CRAWLLOG(tag_title=form.title.data,event_start=datetime.now(), event_text='ADDED TO DB')
+            addTarget.logs.append(addLog)
+            db.session.add(addTarget)
+            db.session.commit()
+            db.session.close()
+            back = models.TWITTER.query.filter(models.TWITTER.title == form.title.data).first()
+            return redirect(url_for('twittertargetDetail', id=back.row_id))
+        except IntegrityError:
+            flash(u'Twitter user account already in database!', 'danger')
+            db.session.rollback()
+
+    return render_template("twittertargets.html", TWITTER=TWITTER, form=form, closed = True)
 
 
 
@@ -225,9 +250,10 @@ def refreshtwittertrend():
 '''API-SEARCH-TARGETS'''
 @app.route('/twittersearchtargets/<int:page>', methods=['GET', 'POST'])
 def twittersearchtargets(page=1):
-    #TWITTER = models.TWITTER.query.filter(models.TWITTER.status == '1').filter(models.TWITTER.targetType=='Search')
-    TWITTER = models.TWITTER.query.filter(models.TWITTER.targetType == 'Search').order_by(models.TWITTER.title).paginate(page, TARGETS_PER_PAGE, False)
+
+    TWITTER = models.TWITTER.query.filter(models.TWITTER.targetType == 'Search').filter(models.TWITTER.status==1).order_by(models.TWITTER.title).paginate(page, TARGETS_PER_PAGE, False)
     templateType = "Search"
+    openClosed = "Open"
     form = twitterTargetForm(prefix='form')
     if request.method == 'POST'and form.validate_on_submit():
         try:
@@ -248,6 +274,32 @@ def twittersearchtargets(page=1):
             db.session.rollback()
 
     return render_template("twittertargets.html", TWITTER=TWITTER, form=form, templateType = templateType)
+
+'''API-SEARCH-TARGETS-CLOSED'''
+@app.route('/twittersearchtargetsclosed/<int:page>', methods=['GET', 'POST'])
+def twittersearchtargetsclosed(page=1):
+    TWITTER = models.TWITTER.query.filter(models.TWITTER.targetType == 'Search').filter(models.TWITTER.status==0).order_by(models.TWITTER.title).paginate(page, TARGETS_PER_PAGE, False)
+    templateType = "Search"
+    form = twitterTargetForm(prefix='form')
+    if request.method == 'POST'and form.validate_on_submit():
+        try:
+            addTarget = models.TWITTER(title=form.title.data, searchString=form.searchString.data, creator=form.creator.data, targetType='Search',
+                                       description=form.description.data, subject=form.subject.data,
+                                       status=form.status.data, lastCrawl=None, totalTweets=0,
+                                       added=datetime.now(), woeid=None, index=form.index.data, schedule=None, scheduleInterval=None, scheduleText = None)
+            addLog = models.CRAWLLOG(tag_title=form.title.data, event_start=datetime.now(), event_text='ADDED TO DB')
+            addTarget.logs.append(addLog)
+            db.session.add(addTarget)
+            db.session.commit()
+            db.session.close()
+            back = models.TWITTER.query.filter(models.TWITTER.title == form.title.data).first()
+            return redirect(url_for('twittertargetDetail', id=back.row_id))
+
+        except IntegrityError:
+            flash(u'Search is already in database! ', 'danger')
+            db.session.rollback()
+
+    return render_template("twittertargets.html", TWITTER=TWITTER, form=form, templateType = templateType, closed=True)
 
 '''COLLECTIONS'''
 @app.route('/collections/<int:page>', methods=['GET', 'POST'])
@@ -451,9 +503,6 @@ def collectionDetail(id, page=1):
         print (schedForm.errors.items())
 
 
-
-
-
     if request.method == 'POST' and collectionForm.validate_on_submit():
         try:
             collectionForm.populate_obj(object)
@@ -548,9 +597,9 @@ def reactivateTwitterTarget(id):
     object.status = 1
     db.session.commit()
     if object.targetType == 'Search':
-        return redirect('/twittersearchtargets/1')
+        return redirect('/twittersearchtargetsclosed/1')
     else:
-        return redirect('/twittertargets/1')
+        return redirect('/twittertargetsclosed/1')
 
 
 '''

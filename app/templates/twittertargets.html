@@ -64,8 +64,33 @@
     <div class="col-lg-12">
         <div class="panel panel-default">
             <div class="panel-heading">
-                <h4> <span class="panel-title pull-left"><i class="fa fa-crosshairs fa-fw"></i> TARGETS</span></h4>
-                <button class="btn btn-primary btn-xs pull-right" data-toggle="modal" data-target="#myModal">Add</button>
+
+
+                {% if not closed  %}
+                <h4> <span class="panel-title pull-left"><i class="fa fa-crosshairs fa-fw"></i> OPEN TARGETS</span></h4>
+                <div class="btn-group pull-right">
+                     <button type="button" class="btn btn-primary btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Actions <span class="caret"></span></button>
+                     <ul class="dropdown-menu">
+                         <li><a data-toggle="modal" href="#myModal" data-target="#myModal"><i class="fa fa-plus fa-fw"></i> Add</a></li>
+                         <li role="separator" class="divider"></li>
+                        {% if templateType == "Search" %} <li><a href="{{ url_for('twittersearchtargetsclosed', page=1) }}"><i class="fa fa-lock fa-fw"></i> View closed</a></li>
+
+                         {% else %}
+                         <li><a href="{{ url_for('twittertargetsclosed', page=1) }}"><i class="fa fa-lock fa-fw"></i> View closed</a></li>
+                        {% endif %}
+
+                     </ul>
+                 </div>
+                {% else %}
+                 <h4> <span class="panel-title pull-left"><i class="fa fa-crosshairs fa-fw"></i> CLOSED TARGETS</span></h4>
+                {% if templateType == "Search" %}
+                <a class="btn btn-primary btn-xs pull-right" href="{{ url_for('twittersearchtargets', page=1) }}" role="button"><i class="fa fa-arrow-left fa-fw"></i> Return to open targets</a>
+                 {% else %}
+                <a class="btn btn-primary btn-xs pull-right" href="{{ url_for('twittertargets', page=1) }}" role="button"><i class="fa fa-arrow-left fa-fw"></i> Return to open targets</a>
+                {% endif %}
+                 {% endif %}
+                <!--<button class="btn btn-primary btn-xs pull-right" data-toggle="modal" data-target="#myModal">Add</button>
+                <li><a href="{{ url_for('twittersearchtargets', page=1) }}"><i class="fa fa-trash fa-fw"></i> View open</a></li>-->
                 <div class="clearfix"></div>
             </div>
             <div class="panel-body">
