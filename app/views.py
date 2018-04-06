@@ -24,6 +24,7 @@ import psutil
 import uuid
 
 q = Queue(connection=Redis())
+eq = Queue('internal',connection=Redis())
 scheduler = Scheduler(connection=Redis())
 @app.before_first_request
 def before_first_request():
@@ -171,7 +172,7 @@ def twittertrends():
         addloc = models.TRENDS_LOC(name=None,loc=trendForm.geoloc.data,schedule=None, scheduleInterval=None, scheduleText=None)
         db.session.add(addloc)
         db.session.commit()
-        q.enqueue(getTrends)
+        eq.enqueue(getTrends)
         flash(u'Trend location added!', 'success')
         return redirect((url_for('twittertrends')))
     if request.method == 'POST' and not trendForm.validate_on_submit():
@@ -243,7 +244,7 @@ def removetwittertrend(id):
 """Route to refresh trends """
 @app.route('/refreshtwittertrend', methods=['GET', 'POST'])
 def refreshtwittertrend():
-    q.enqueue(getTrends)
+    eq.enqueue(getTrends)
     return redirect((url_for('twittertrends')))
 
 
@@ -660,7 +661,7 @@ def startCollectionCrawl(id):
     with app.app_context():
         jobId = str(uuid.uuid4())
         flash(u'Archiving started!', 'success')
-        q.enqueue(startScheduleCollectionCrawl, id, timeout=86400)
+        eq.enqueue(startScheduleCollectionCrawl, id, timeout=86400)
 
         return redirect(url_for('collectionDetail', id=id, page=1))
 
@@ -670,7 +671,7 @@ Route to call followers
 @app.route('/followers/<id>', methods=['GET','POST'])
 def followers(id):
 
-    q.enqueue(Followers, id, timeout=86400)
+    eq.enqueue(Followers, id, timeout=86400)
     flash(u'Getting followers, please refresh page!', 'success')
     return redirect(request.referrer)
 
@@ -680,11 +681,11 @@ Route to call hashtag report
 @app.route('/hash/<id>', methods=['GET','POST'])
 def hash(id):
     if '/twittertargets' in request.referrer:
-        q.enqueue(hashTags, id, timeout=86400)
+        eq.enqueue(hashTags, id, timeout=86400)
         flash(u'Getting hashtags, please refresh page!', 'success')
 
     elif '/collectiondetail' in request.referrer:
-        q.enqueue(hashTagsCollection, id, timeout=86400)
+        eq.enqueue(hashTagsCollection, id, timeout=86400)
 
     else:
         flash(u'Ooops something went wrong!', 'danger')
@@ -697,11 +698,11 @@ Route to call hash
 @app.route('/topuser/<id>', methods=['GET','POST'])
 def top_users(id):
     if '/twittertargets' in request.referrer:
-        q.enqueue(topUsers, id, timeout=86400)
+        eq.enqueue(topUsers, id, timeout=86400)
         flash(u'Getting top users, please refresh page!', 'success')
 
     elif '/collectiondetail' in request.referrer:
-        q.enqueue(topUsersCollection, id, timeout=86400)
+        eq.enqueue(topUsersCollection, id, timeout=86400)
 
     else:
         flash(u'Ooops something went wrong!', 'danger')
@@ -714,11 +715,11 @@ Route to call dehydrate report
 @app.route('/dehydrate/<id>', methods=['GET','POST'])
 def dehydrate(id):
     if '/twittertargets' in request.referrer:
-        q.enqueue(dehydrateUserSearch, id, timeout=86400)
+        eq.enqueue(dehydrateUserSearch, id, timeout=86400)
         flash(u'Dehydrating, please refresh page!', 'success')
 
     elif '/collectiondetail' in request.referrer:
-        q.enqueue(dehydrateCollection, id, timeout=86400)
+        eq.enqueue(dehydrateCollection, id, timeout=86400)
         flash(u'Dehydrating, please refresh page!', 'success')
 
     else:
@@ -732,11 +733,11 @@ Route to call urls report
 @app.route('/urls/<id>', methods=['GET','POST'])
 def urls(id):
     if '/twittertargets' in request.referrer:
-        q.enqueue(urlsUserSearch, id, timeout=86400)
+        eq.enqueue(urlsUserSearch, id, timeout=86400)
         flash(u'Extracting urls, please refresh page!', 'success')
 
     elif '/collectiondetail' in request.referrer:
-        q.enqueue(urlsCollection, id, timeout=86400)
+        eq.enqueue(urlsCollection, id, timeout=86400)
         flash(u'Extracting urls, please refresh page!', 'success')
 
     else:
@@ -762,11 +763,11 @@ Route to call wordCloud
 @app.route('/wordcloud/<id>', methods=['GET','POST'])
 def wordc(id):
     if '/twittertargets' in request.referrer:
-        q.enqueue(wordCloud, id, timeout=86400)
+        eq.enqueue(wordCloud, id, timeout=86400)
         flash(u'Generating wordcloud, please refresh page!', 'success')
 
     elif '/collectiondetail' in request.referrer:
-        q.enqueue(wordCloudCollection, id, timeout=86400)
+        eq.enqueue(wordCloudCollection, id, timeout=86400)
         flash(u'Generating wordcloud, please refresh page!', 'success')
 
     else:
