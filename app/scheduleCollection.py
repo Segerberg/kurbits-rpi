@@ -14,10 +14,11 @@ def startScheduleCollectionCrawl(id):
             first(). \
             tags
         for target in linkedTargets:
-            last_crawl = models.TWITTER.query.get(target.row_id)
-            last_crawl.lastCrawl = datetime.now()
-            db.session.commit()
-            q.enqueue(twittercrawl, target.row_id, timeout=86400)
+            if target.status == 1:
+                last_crawl = models.TWITTER.query.get(target.row_id)
+                last_crawl.lastCrawl = datetime.now()
+                db.session.commit()
+                q.enqueue(twittercrawl, target.row_id, timeout=86400)
         db.session.close()
 
 
