@@ -187,7 +187,6 @@ def twittertrends():
 @app.route('/addtwittertrend/<id>', methods=['GET', 'POST'])
 def addtwittertrend(id):
     trendAll = models.TWITTER_TRENDS.query.all()
-    twitterTargets = models.TWITTER.query.all()
     if request.method == 'POST':
         addTarget = models.TWITTER(title=id, searchString=id,
                                    creator='', targetType='Search',
@@ -206,7 +205,8 @@ def addtwittertrend(id):
         db.session.add(addTarget)
         db.session.commit()
         db.session.close()
-        return redirect((url_for('twittertrends')))
+        TWITTER = models.TWITTER.query.filter(models.TWITTER.title == id).first()
+        return redirect((url_for('twittertargetDetail', id=TWITTER.row_id)))
 
 
 """Route to clear Trends"""
@@ -464,7 +464,7 @@ def twittertargetDetail(id):
 
 
 
-    return render_template("twittertargetdetail.html", TWITTER=TWITTER, form=form, CRAWLLOG=CRAWLLOG, EXPORTS=EXPORTS, linkedCollections=linkedCollections, assForm=assForm, l=l)
+    return render_template("twittertargetdetail.html", TWITTER=TWITTER, form=form, CRAWLLOG=CRAWLLOG, EXPORTS=EXPORTS, linkedCollections=linkedCollections, assForm=assForm, l=l, ref = request.referrer)
 
 '''Route to detail view of collections'''
 @app.route('/collectiondetail/<id>/<int:page>', methods=['GET', 'POST'])

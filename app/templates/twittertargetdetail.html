@@ -5,8 +5,12 @@
 {% endblock %}
 
 {% block pageHeader %}
+
+{% if 'twittertrends' in ref %} <a class="btn btn-warning btn-sm pull-right" href="{{ url_for('twittertrends') }}" role="button"><i class="fa fa-arrow-left fa-fw"></i> Return to trends</a>{% endif %}
+
 {% if TWITTER.targetType == 'User' %}<a href="{{ url_for('userlist',page=1, id=TWITTER.title)}}" class="name">@{{ TWITTER.title }} </a>{%else%}<a href="{{ url_for('searchlist',page=1, id=TWITTER.row_id)}}" class="name">{{ TWITTER.title }} </a>{% endif %}
-{% endblock %}
+
+    {% endblock %}
 
 {% block content %}
 <div class="row">
