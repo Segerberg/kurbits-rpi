@@ -333,38 +333,6 @@ def collections(page=1):
 
     return render_template("collections.html", COLLECTIONS=COLLECTIONS, collectionForm=collectionForm)
 
-'''
-Route to call Schedule
-'''
-@app.route('/schedule/<id>', methods=['GET','POST'])
-def schedule(id):
-    jobId = str(uuid.uuid4())
-    if '/twittertargets' in request.referrer:
-
-        flash(u'Scheduled Target!', 'success')
-
-    elif '/collectiondetail' in request.referrer:
-        object = models.COLLECTION.query.filter(models.COLLECTION.row_id == id).first()
-        if object.schedule:
-            scheduler.cancel(object.schedule)
-        object.schedule = jobId
-        scheduler.schedule(
-            scheduled_time=datetime.utcnow(),  # Time for first execution, in UTC timezone
-            func=startScheduleCollectionCrawl,  # Function to be queued
-            args=[id],
-            interval=900,  # Time before the function is called again, in seconds
-            repeat=None, # Repeat this number of times (None means repeat forever)
-            id=jobId
-        )
-
-        db.session.commit()
-        flash(u'Scheduled Collection', 'success')
-
-    else:
-        flash(u'Ooops something went wrong!', 'danger')
-
-    return redirect(request.referrer)
-
 
 '''Route to view archived user tweets '''
 @app.route('/usertweets/<id>/<int:page>', methods=['GET', 'POST'])
