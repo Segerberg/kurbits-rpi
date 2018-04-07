@@ -399,7 +399,7 @@ def twittertargetDetail(id):
 
     TWITTER = models.TWITTER.query.filter(models.TWITTER.row_id == id).first()
     object = models.TWITTER.query.get_or_404(id)
-    CRAWLLOG = models.CRAWLLOG.query.order_by(models.CRAWLLOG.event_start.desc()).filter(models.CRAWLLOG.tag_id==id).limit(1)
+    CRAWLLOG = models.CRAWLLOG.query.order_by(models.CRAWLLOG.event_start.desc()).filter(models.CRAWLLOG.tag_id==id).limit(10)
     EXPORTS = models.EXPORTS.query.order_by(models.EXPORTS.row_id.desc()).filter(models.EXPORTS.twitter_id==id)
     form = twitterTargetForm(prefix='form',obj=object)
     assForm = collectionAddForm(prefix="assForm")
@@ -627,7 +627,11 @@ Route to call collection twarc-archive
 @app.route('/startcollectioncrawl/<id>', methods=['GET','POST'])
 def startCollectionCrawl(id):
     with app.app_context():
-        jobId = str(uuid.uuid4())
+        #jobId = str(uuid.uuid4())
+        COLLECTION = object = models.COLLECTION.query.get_or_404(id)
+        COLLECTION.lastCrawl = datetime.now()
+        db.session.commit()
+        db.session.close()
         flash(u'Archiving started!', 'success')
         eq.enqueue(startScheduleCollectionCrawl, id, timeout=86400)
 
