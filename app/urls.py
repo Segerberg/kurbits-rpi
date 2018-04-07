@@ -13,7 +13,7 @@ def urlsUserSearch(id):
     if not os.path.isdir(EXPORTS_BASEDIR):
         os.makedirs(EXPORTS_BASEDIR)
     q = models.TWITTER.query.filter(models.TWITTER.row_id == id).first()
-    with open(os.path.join(EXPORTS_BASEDIR, '{}_urls_UUID_{}.txt'.format(q.title, export_uuid)), 'w+') as f:
+    with open(os.path.join(EXPORTS_BASEDIR, 'urls_{}.txt'.format(export_uuid)), 'w+') as f:
         for filename in os.listdir(os.path.join(ARCHIVE_BASEDIR,q.title)):
             if filename.endswith(".gz"):
                 for line in gzip.open(os.path.join(ARCHIVE_BASEDIR,q.title,filename)):
@@ -31,7 +31,7 @@ def urlsUserSearch(id):
                             f.write('\n')
 
 
-    addExportRef = models.EXPORTS(url='{}_urls_UUID_{}.txt'.format(q.title, export_uuid),type='Urls',exported=datetime.now(),count=count)
+    addExportRef = models.EXPORTS(url='urls_{}.txt'.format(export_uuid),type='Urls',exported=datetime.now(),count=count)
     q.exports.append(addExportRef)
     db.session.commit()
     db.session.close()
@@ -48,7 +48,7 @@ def urlsCollection(id):
         tags
     dbDateStart = q.inclDateStart
     dbDateStop = q.inclDateEnd
-    with open(os.path.join(EXPORTS_BASEDIR,'{}_urls_UUID_{}.txt'.format(q.title,export_uuid)),'w+') as f:
+    with open(os.path.join(EXPORTS_BASEDIR,'urls_{}.txt'.format(export_uuid)),'w+') as f:
         for target in linkedTargets:
             print (target.title)
             for filename in os.listdir(os.path.join(ARCHIVE_BASEDIR,target.title)):
@@ -72,7 +72,7 @@ def urlsCollection(id):
                                     f.write('\n')
 
 
-    addExportRef = models.EXPORTS(url='{}_urls_UUID_{}.txt'.format(q.title, export_uuid),
+    addExportRef = models.EXPORTS(url='urls_{}.txt'.format(export_uuid),
                                   type='Urls', exported=datetime.now(), count=count)
     q.exports.append(addExportRef)
     db.session.commit()
