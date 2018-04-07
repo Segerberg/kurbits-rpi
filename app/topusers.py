@@ -13,7 +13,7 @@ def topUsers(id):
     if not os.path.isdir(EXPORTS_BASEDIR):
         os.makedirs(EXPORTS_BASEDIR)
     q = models.TWITTER.query.filter(models.TWITTER.row_id == id).first()
-    with open(os.path.join(EXPORTS_BASEDIR, '{}_topusers_UUID_{}.txt'.format(q.title, export_uuid)), 'w+') as f:
+    with open(os.path.join(EXPORTS_BASEDIR, 'topusers_{}.txt'.format(export_uuid)), 'w+') as f:
         for filename in os.listdir(os.path.join(ARCHIVE_BASEDIR,q.title)):
             try:
                 if filename.endswith(".gz"):
@@ -27,7 +27,7 @@ def topUsers(id):
             f.write(str(t))
             f.write('\n')
 
-    addExportRef = models.EXPORTS(url='{}_topusers_UUID_{}.txt'.format(q.title, export_uuid),type='Top Users',exported=datetime.now(),count=None)
+    addExportRef = models.EXPORTS(url='topusers_{}.txt'.format(export_uuid),type='Top Users',exported=datetime.now(),count=None)
     q.exports.append(addExportRef)
     db.session.commit()
     db.session.close()
@@ -45,7 +45,7 @@ def topUsersCollection(id):
         tags
     dbDateStart = q.inclDateStart
     dbDateStop = q.inclDateEnd
-    with open(os.path.join(EXPORTS_BASEDIR, '{}_topusers_UUID_{}.txt'.format(q.title, export_uuid)), 'w+') as f:
+    with open(os.path.join(EXPORTS_BASEDIR, 'topusers_{}.txt'.format(export_uuid)), 'w+') as f:
         for target in linkedTargets:
             print (target.title)
             try:
@@ -64,7 +64,7 @@ def topUsersCollection(id):
             f.write(str(t))
             f.write('\n')
 
-    addExportRef = models.EXPORTS(url='{}_topusers_UUID_{}.txt'.format(q.title, export_uuid),type='Top Users',exported=datetime.now(),count=None)
+    addExportRef = models.EXPORTS(url='topusers_{}.txt'.format(export_uuid),type='Top Users',exported=datetime.now(),count=None)
     q.exports.append(addExportRef)
     db.session.commit()
     db.session.close()

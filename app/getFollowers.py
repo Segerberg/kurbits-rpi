@@ -17,13 +17,13 @@ def Followers(id):
             os.makedirs(EXPORTS_BASEDIR)
         q = models.TWITTER.query.filter(models.TWITTER.row_id == id).first()
         x = t.follower_ids(q.title)
-        with open(os.path.join(EXPORTS_BASEDIR, '{}_followers_UUID_{}.txt'.format(q.title, export_uuid)), 'w+') as f:
+        with open(os.path.join(EXPORTS_BASEDIR, 'followers_{}.txt'.format(export_uuid)), 'w+') as f:
 
             for u in x:
                     count = count + 1
                     f.write(u)
                     f.write('\n')
-        addExportRef = models.EXPORTS(url='{}_followers_UUID_{}.txt'.format(q.title, export_uuid),type='Followers',exported=datetime.now(),count=count)
+        addExportRef = models.EXPORTS(url='followers_{}.txt'.format(export_uuid),type='Followers',exported=datetime.now(),count=count)
         q.exports.append(addExportRef)
         db.session.commit()
         db.session.close()

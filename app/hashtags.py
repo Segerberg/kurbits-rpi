@@ -13,7 +13,7 @@ def hashTags(id):
     if not os.path.isdir(EXPORTS_BASEDIR):
         os.makedirs(EXPORTS_BASEDIR)
     q = models.TWITTER.query.filter(models.TWITTER.row_id == id).first()
-    with open(os.path.join(EXPORTS_BASEDIR, '{}_hashtags_UUID_{}.txt'.format(q.title, export_uuid)), 'w+') as f:
+    with open(os.path.join(EXPORTS_BASEDIR, 'hashtags_{}.txt'.format(export_uuid)), 'w+') as f:
         for filename in os.listdir(os.path.join(ARCHIVE_BASEDIR,q.title)):
             try:
                 if filename.endswith(".gz"):
@@ -28,7 +28,7 @@ def hashTags(id):
             f.write(str(t))
             f.write('\n')
 
-    addExportRef = models.EXPORTS(url='{}_hashtags_UUID_{}.txt'.format(q.title, export_uuid),type='hashtags',exported=datetime.utcnow(),count=None)
+    addExportRef = models.EXPORTS(url='hashtags_{}.txt'.format(export_uuid),type='hashtags',exported=datetime.utcnow(),count=None)
     q.exports.append(addExportRef)
     db.session.commit()
     db.session.close()
@@ -47,7 +47,7 @@ def hashTagsCollection(id):
     dbDateStart = q.inclDateStart
     dbDateStop = q.inclDateEnd
 
-    with open(os.path.join(EXPORTS_BASEDIR, '{}_hashtags_UUID_{}.txt'.format(q.title, export_uuid)), 'w+') as f:
+    with open(os.path.join(EXPORTS_BASEDIR, 'hashtags_{}.txt'.format(export_uuid)), 'w+') as f:
         for target in linkedTargets:
             print (target.title)
             try:
@@ -68,7 +68,7 @@ def hashTagsCollection(id):
             f.write(str(t))
             f.write('\n')
 
-    addExportRef = models.EXPORTS(url='{}_hashtags_UUID_{}.txt'.format(q.title, export_uuid),type='hashtags',exported=datetime.utcnow(),count=None)
+    addExportRef = models.EXPORTS(url='hashtags_{}.txt'.format(q.title, export_uuid),type='hashtags',exported=datetime.utcnow(),count=None)
     q.exports.append(addExportRef)
     db.session.commit()
     db.session.close()

@@ -112,9 +112,9 @@ def wordCloud(id):
 
 
     export_uuid = uuid.uuid4()
-    with open(os.path.join(EXPORTS_BASEDIR, '{}_wordcloud_UUID_{}.html'.format(q.title, export_uuid)), 'w+') as f:
+    with open(os.path.join(EXPORTS_BASEDIR, 'wordcloud_{}.html'.format(export_uuid)), 'w+') as f:
             f.write(output)
-    addExportRef = models.EXPORTS(url='{}_wordcloud_UUID_{}.html'.format(q.title, export_uuid),
+    addExportRef = models.EXPORTS(url='wordcloud_{}.html'.format(export_uuid),
                                   type='Wordcloud', exported=datetime.utcnow(), count=None)
     q.exports.append(addExportRef)
     db.session.commit()
@@ -248,9 +248,9 @@ def wordCloudCollection(id):
 
 
     export_uuid = uuid.uuid4()
-    with open(os.path.join(EXPORTS_BASEDIR, '{}_wordcloud_UUID_{}.html'.format(q.title, export_uuid)), 'w+') as f:
+    with open(os.path.join(EXPORTS_BASEDIR, 'wordcloud_{}.html'.format(export_uuid)), 'w+') as f:
             f.write(output)
-    addExportRef = models.EXPORTS(url='{}_wordcloud_UUID_{}.html'.format(q.title, export_uuid),
+    addExportRef = models.EXPORTS(url='wordcloud_{}.html'.format(export_uuid),
                                   type='Wordcloud', exported=datetime.utcnow(), count=None)
     q.exports.append(addExportRef)
     db.session.commit()
