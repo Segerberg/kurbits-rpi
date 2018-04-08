@@ -37,7 +37,7 @@
                     <li><b style="color:grey"> Description:</b> {{ object.description }}</li>
                     <li><b style="color:grey"> Keywords:</b> {{ object.subject }}</li>
                     <li><b style="color:grey">Status:</b> {% if object.status == '1' %}Active {% else %} Closed {% endif %}</li>
-                    <li><b style="color:grey"> Last Archived:</b>{% if object.lastCrawl == None %} - {% else %} {{ object.lastCrawl.strftime('%Y-%m-%d %H:%M:%S') }}{% endif %}</li>
+                    <li><b style="color:grey"> Last Archived:</b>{% if object.lastCrawl == None %} - {% else %} {{ object.lastCrawl.strftime('%Y-%m-%d %H:%M') }}{% endif %}</li>
                  <h5><span class="label label-default">Inclusive Dates</span></h5>
                     <li><b style="color:grey">Start Date</b>{% if object.inclDateStart != None %} {{ object.inclDateStart.strftime('%Y-%m-%d')}}{% else %} - {% endif %}</li>
                     <li><b style="color:grey">End Date</b>{% if object.inclDateEnd != None %} {{ object.inclDateEnd.strftime('%Y-%m-%d')}}{% else %} - {% endif %}</li>
