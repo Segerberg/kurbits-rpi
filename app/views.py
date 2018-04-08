@@ -797,7 +797,7 @@ def settings():
     workers = Worker.all(connection=Redis())
 
 
-    return render_template("settings.html", stopWords = stopWords, stopForm = stopForm, diskList=diskList, workers=workers,qlen=len(q))
+    return render_template("settings.html", stopWords = stopWords, stopForm = stopForm, diskList=diskList, workers=workers,qlen=len(q),intqlen=len(eq))
 
 
 '''Route to remove stop word'''
