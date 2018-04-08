@@ -54,8 +54,8 @@
                 <h5><span class="label label-default">Metadata</span></h5>
                 <ul class="list-unstyled">
                     <li><b style="color:grey">Archived Tweets:</b> {{ TWITTER.totalTweets }}</li>
-                    <li><b style="color:grey">Added:</b> {{ TWITTER.added.strftime('%Y-%m-%d %H:%M:%S') }}</li>
-                    <li><b style="color:grey">Last Archived:</b> {% if TWITTER.lastCrawl == None %}<td>-</td>{% else %}<td>{{ TWITTER.lastCrawl.strftime('%Y-%m-%d')}}</td>{% endif %}</li>
+                    <li><b style="color:grey">Added:</b> {{ TWITTER.added.strftime('%Y-%m-%d') }}</li>
+                    <li><b style="color:grey">Last Archived:</b> {% if TWITTER.lastCrawl == None %}<td>-</td>{% else %}<td>{{ TWITTER.lastCrawl.strftime('%Y-%m-%d %H:%M')}}</td>{% endif %}</li>
                 </ul>
                  </div>
                 <div class="col-lg-4">
