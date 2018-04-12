@@ -30,11 +30,10 @@
                         {% for worker in workers %}
                          <tr>
                              <td>{{worker.name}}</td>
-                             <td>{{worker.birth_date.strftime('%Y-%m-%d %H:%M:%S')}}</td>
+                             {%if worker.birth_date%}<td>{{worker.birth_date.strftime('%Y-%m-%d %H:%M:%S')}}</td> {%else%}<td>N/A</td>{% endif %}
                              <td>{{worker.successful_job_count}}</td>
                              <td>{{worker.failed_job_count}}</td>
                              <td>{{worker.total_working_time}}</td>
-
 
 
                          </tr>
