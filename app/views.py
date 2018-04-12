@@ -12,6 +12,7 @@ from .topusers import topUsers, topUsersCollection
 from .dehydrate import dehydrateUserSearch,dehydrateCollection
 from .wordcloud import wordCloud, wordCloudCollection
 from .urls import urlsUserSearch, urlsCollection
+from .tweets2csv import csvUserSearch, csvCollection
 from .scheduleCollection import startScheduleCollectionCrawl
 from config import POSTS_PER_PAGE, REDIS_DB, MAP_VIEW,MAP_ZOOM,TARGETS_PER_PAGE,EXPORTS_BASEDIR,ARCHIVE_BASEDIR, TREND_UPDATE
 from datetime import datetime, timedelta
@@ -746,6 +747,24 @@ def wordc(id):
         flash(u'Ooops something went wrong!', 'danger')
 
     return redirect(request.referrer)
+'''
+Route to call CSV
+'''
+@app.route('/t_csv/<id>', methods=['GET','POST'])
+def t_csv(id):
+    if '/twittertargets' in request.referrer:
+        eq.enqueue(csvUserSearch, id, timeout=86400)
+        flash(u'Generating CSV, please refresh page!', 'success')
+
+    elif '/collectiondetail' in request.referrer:
+        eq.enqueue(csvCollection, id, timeout=86400)
+        flash(u'Generating CSV, please refresh page!', 'success')
+
+    else:
+        flash(u'Ooops something went wrong!', 'danger')
+
+
+    return redirect(request.referrer)
 
 
 '''
@@ -754,6 +773,14 @@ Route to send exports
 @app.route('/export/<filename>')
 def export(filename):
     return send_from_directory(app.config['EXPORTS_BASEDIR'],
+                               filename)
+'''
+Route to send joblog 
+'''
+@app.route('/joblog/<id>/<filename>')
+def joblog(id,filename):
+    object = models.TWITTER.query.get_or_404(id)
+    return send_from_directory(os.path.join(app.config['ARCHIVE_BASEDIR'],object.title),
                                filename)
 
 '''

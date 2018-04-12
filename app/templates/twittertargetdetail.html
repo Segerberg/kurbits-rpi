@@ -165,6 +165,8 @@
                         <li><a href="{{ url_for('hash', id=TWITTER.row_id) }}"><i class="fa fa-hashtag fa-fw"></i> Hashtags</a></li>
                          {% if TWITTER.targetType == 'Search' %} <li><a href="{{ url_for('top_users', id=TWITTER.row_id) }}"><i class="fa fa-user fa-fw"></i> Top Users</a></li> {% endif %}
                          <li><a href="{{ url_for('urls', id=TWITTER.row_id) }}"><i class="fa fa-cloud fa-fw"></i> Urls</a></li>
+                         <li><a href="{{ url_for('t_csv', id=TWITTER.row_id) }}"><i class="fa fa-file fa-fw"></i> CSV</a></li>
+                         <li><a href="{{ url_for('joblog', id=TWITTER.row_id, filename='archive.log') }}"><i class="fa fa-list fa-fw"></i> Archive log</a></li>
 
                      </ul>
                  </div>
