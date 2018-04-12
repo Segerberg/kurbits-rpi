@@ -55,19 +55,22 @@ def urlsCollection(id):
                 if filename.endswith(".gz"):
                     for line in gzip.open(os.path.join(ARCHIVE_BASEDIR,target.title,filename)):
 
-                        count = count + 1
+
                         tweet = json.loads(line.decode('utf-8'))
                         tweetDate = datetime.strptime(tweet['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
 
                         if tweetDate > dbDateStart and tweetDate < dbDateStop:
                             for url in tweet["entities"]["urls"]:
                                 if 'unshortened_url' in url:
+                                    count = count + 1
                                     f.write(url['unshortened_url'])
                                     f.write('\n')
                                 elif url.get('expanded_url'):
+                                    count = count + 1
                                     f.write(url['expanded_url'])
                                     f.write('\n')
                                 elif url.get('url'):
+                                    count = count + 1
                                     f.write(url['url'])
                                     f.write('\n')
 

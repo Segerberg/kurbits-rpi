@@ -44,11 +44,11 @@ def dehydrateCollection(id):
                 if filename.endswith(".gz"):
                     for line in gzip.open(os.path.join(ARCHIVE_BASEDIR,target.title,filename)):
 
-                        count = count + 1
                         tweet = json.loads(line.decode('utf-8'))
                         tweetDate = datetime.strptime(tweet['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
 
                         if tweetDate > dbDateStart and tweetDate < dbDateStop:
+                            count = count + 1
                             f.write(tweet['id_str'])
                             f.write('\n')
 
