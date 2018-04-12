@@ -5,7 +5,10 @@ from datetime import datetime
 from config import ARCHIVE_BASEDIR, EXPORTS_BASEDIR
 from app import models, db
 import uuid
-
+"""
+This is a modified script from the Twarc utils library
+https://github.com/DocNow/twarc
+"""
 def dehydrateUserSearch(id):
     count = 0
     export_uuid = uuid.uuid4()

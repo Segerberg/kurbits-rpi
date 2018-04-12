@@ -6,7 +6,10 @@ from config import ARCHIVE_BASEDIR, EXPORTS_BASEDIR
 from app import models, db
 import uuid
 from collections import Counter
-
+"""
+This is a modified script from the Twarc utils library
+https://github.com/DocNow/twarc
+"""
 def hashTags(id):
     tags = []
     export_uuid = uuid.uuid4()

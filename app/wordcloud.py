@@ -9,7 +9,10 @@ import uuid
 import os
 from datetime import datetime
 from app import models,db
-
+"""
+This is a modified script from the Twarc utils library
+https://github.com/DocNow/twarc
+"""
 def wordCloud(id):
     try:
         from urllib import urlopen  # Python 2

@@ -7,6 +7,11 @@ from app import models, db
 import uuid
 from collections import Counter
 
+"""
+This is a modified script from the Twarc utils library
+https://github.com/DocNow/twarc
+"""
+
 def topUsers(id):
     tags = []
     export_uuid = uuid.uuid4()
