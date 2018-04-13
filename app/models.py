@@ -199,3 +199,12 @@ class VOCABS(db.Model):
         self.term = term
         self.use = use
 
+class USERS(db.Model):
+    __tablename__ = 'USERS'
+    row_id = db.Column(db.Integer, primary_key=True)
+    user = db.Column(db.String(250))
+    passw = db.Column(db.String(250))
+
+    def __init__(self,user, passw):
+        self.user = user
+        self.passw = passw

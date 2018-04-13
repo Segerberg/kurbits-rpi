@@ -1,16 +1,17 @@
 from flask_wtf import FlaskForm
 from app import models, db
-from wtforms import StringField, BooleanField, SelectField, RadioField , FieldList, FormField, TextAreaField, SelectMultipleField, widgets,validators
+from wtforms import StringField, BooleanField, SelectField, RadioField , FieldList, FormField, TextAreaField, SelectMultipleField, widgets,validators, PasswordField
 from wtforms.fields.html5 import DateField
 from wtforms.validators import DataRequired,Regexp
 from wtforms.ext.sqlalchemy.fields import QuerySelectField
 from wtforms.ext.sqlalchemy.fields import QuerySelectMultipleField
 
-def collectionTypes():
+def collection():
     return db.session.query(models.COLLECTION).all()
 
+
 class collectionAddForm(FlaskForm):
-    assoc = QuerySelectField(u'Collection Name', query_factory=collectionTypes, get_label='title')
+    assoc = QuerySelectField(u'Collection Name', query_factory=collection, get_label='title')
 
 
 class twitterTargetForm(FlaskForm):
@@ -28,7 +29,9 @@ class twitterCollectionForm(FlaskForm):
     title = StringField(u'Title', validators=[DataRequired()])
     curator = StringField(u'Curator')
     description = TextAreaField(u'Description')
+    #collectionType = SelectField(u'Collection Type',choices=RandomChoicesIterable())
     collectionType = SelectField(u'Collection Type', choices=[("Not Specified", "Not Specified"),("Event", "Event"),("Subject","Subject")])
+    #collectionType = QuerySelectField(u'Collection Name', query_factory=collectionTypes, get_label='term', allow_blank=True)
     subject = StringField(u'Subject')
     status = SelectField(u'Status', choices=[("1", "Active"),("0","Closed")])
     inclDateStart = DateField(u'Inclusive start date',[validators.Optional()],format='%Y-%m-%d')
@@ -48,6 +51,13 @@ class stopWordsForm(FlaskForm):
 
 SCHEDULE_CHOICES = [('604800', 'Weekly'), ('86400', 'Daily'),('43200', 'Twice a day'),
                                             ('21600', 'Four times a day'),('10800', 'Every third hour'),
-                                            ('3600', 'Hourly'),('60', 'minute')]
+                                            ('3600', 'Hourly'),('60', 'Every minute')]
 class scheduleForm(FlaskForm):
     schedule = SelectField(u'Schedule', choices=SCHEDULE_CHOICES)
+
+class passwordForm(FlaskForm):
+    password = PasswordField('New Password', [
+        validators.DataRequired(),
+        validators.EqualTo('confirm', message='Passwords must match')
+    ])
+    confirm = PasswordField('Repeat Password')

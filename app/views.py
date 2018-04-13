@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 from app import app, render_template, request,db, url_for, redirect,flash,Response,jsonify, send_from_directory
 from app import models
-from .forms import twitterTargetForm, SearchForm, twitterCollectionForm, collectionAddForm, twitterTrendForm, stopWordsForm, scheduleForm,SCHEDULE_CHOICES
+from .forms import twitterTargetForm, SearchForm, twitterCollectionForm, collectionAddForm, twitterTrendForm, stopWordsForm, scheduleForm,SCHEDULE_CHOICES, passwordForm
 from sqlalchemy.exc import IntegrityError
 from .twarcUIarchive import twittercrawl
 from .twitterTrends import getTrends
@@ -23,10 +23,14 @@ from rq_scheduler import Scheduler
 import os
 import psutil
 import uuid
+from flask_httpauth import HTTPBasicAuth
+from werkzeug.security import generate_password_hash, check_password_hash
 
+auth = HTTPBasicAuth()
 q = Queue(connection=Redis())
 eq = Queue('internal',connection=Redis())
 scheduler = Scheduler(connection=Redis())
+
 @app.before_first_request
 def before_first_request():
     COLLECTIONS = models.COLLECTION.query.all()
@@ -44,8 +48,6 @@ def before_first_request():
             )
 
 
-
-
     scheduler.cancel('trendSchedule')
     scheduler.schedule(
         scheduled_time=datetime.utcnow(),
@@ -61,10 +63,20 @@ def before_request():
         search_form = SearchForm()
 
 
+def queryUser():
+    users = db.session.query(models.USERS.user,models.USERS.passw).all()
+    return dict(users)
+
+@auth.verify_password
+def verify_password(username, password):
+    if username in queryUser():
+        return check_password_hash(queryUser().get(username), password)
+    return False
 
 '''INDEX ROUTE'''
 @app.route('/')
 @app.route('/index', methods=['GET', 'POST'])
+@auth.login_required
 def index():
     twitterUserCount = models.TWITTER.query.filter(models.TWITTER.status == '1').filter(models.TWITTER.targetType=='User').count()
     twitterSearchCount = models.TWITTER.query.filter(models.TWITTER.status == '1').filter(models.TWITTER.targetType == 'Search').count()
@@ -75,7 +87,7 @@ def index():
     if request.method == 'POST':
         return redirect((url_for('search_results', form=form, query=form.search.data)))
 
-    return render_template("index.html", twitterUserCount=twitterUserCount, twitterSearchCount=twitterSearchCount, collectionCount=collectionCount,trendsCount=trendsCount, CRAWLLOG=CRAWLLOG,  qlen=len(q), form=form)
+    return render_template("index.html", twitterUserCount=twitterUserCount, twitterSearchCount=twitterSearchCount, collectionCount=collectionCount,trendsCount=trendsCount, CRAWLLOG=CRAWLLOG,  qlen=len(q), form=form, auth=auth.username())
 
 
 '''SEARCH'''
@@ -113,7 +125,7 @@ def twittertargets(page=1):
                                        description=form.description.data, subject=form.subject.data, status=form.status.data,lastCrawl=None, totalTweets=0,
                                        added=datetime.now(), woeid=None, index=form.index.data, schedule=None, scheduleInterval=None, scheduleText = None)
 
-            addLog = models.CRAWLLOG(tag_title=form.title.data,event_start=datetime.now(), event_text='ADDED TO DB')
+            addLog = models.CRAWLLOG(tag_title=form.title.data,event_start=datetime.now(), event_text='Target added')
             addTarget.logs.append(addLog)
             db.session.add(addTarget)
             db.session.commit()
@@ -141,7 +153,7 @@ def twittertargetsclosed(page=1):
                                        description=form.description.data, subject=form.subject.data, status=form.status.data,lastCrawl=None, totalTweets=0,
                                        added=datetime.now(), woeid=None, index=form.index.data, schedule=None, scheduleInterval=None, scheduleText = None)
 
-            addLog = models.CRAWLLOG(tag_title=form.title.data,event_start=datetime.now(), event_text='ADDED TO DB')
+            addLog = models.CRAWLLOG(tag_title=form.title.data,event_start=datetime.now(), event_text='Target added')
             addTarget.logs.append(addLog)
             db.session.add(addTarget)
             db.session.commit()
@@ -191,18 +203,16 @@ def addtwittertrend(id):
     if request.method == 'POST':
         addTarget = models.TWITTER(title=id, searchString=id,
                                    creator='', targetType='Search',
-                                   description='', subject='',
+                                   description='[Added from trends]', subject='',
                                    status='1', lastCrawl=None, totalTweets=0,
                                    added=datetime.now(), woeid=None, index='0', schedule=None, scheduleInterval=None, scheduleText = None)
 
-        addLog = models.CRAWLLOG(tag_title=id, event_start=datetime.now(), event_text='Added to database')
-        addLog2 = models.CRAWLLOG(tag_title=id, event_start=datetime.now(), event_text='Manually added from Trend monitoring')
+        addLog = models.CRAWLLOG(tag_title=id, event_start=datetime.now(), event_text='Target added')
         for t in trendAll:
             if t.name == id:
                 t.saved= True
 
         addTarget.logs.append(addLog)
-        addTarget.logs.append(addLog2)
         db.session.add(addTarget)
         db.session.commit()
         db.session.close()
@@ -263,7 +273,7 @@ def twittersearchtargets(page=1):
                                        description=form.description.data, subject=form.subject.data,
                                        status=form.status.data, lastCrawl=None, totalTweets=0,
                                        added=datetime.now(), woeid=None, index=form.index.data, schedule=None, scheduleInterval=None, scheduleText = None)
-            addLog = models.CRAWLLOG(tag_title=form.title.data, event_start=datetime.now(), event_text='ADDED TO DB')
+            addLog = models.CRAWLLOG(tag_title=form.title.data, event_start=datetime.now(), event_text='Target added')
             addTarget.logs.append(addLog)
             db.session.add(addTarget)
             db.session.commit()
@@ -289,7 +299,7 @@ def twittersearchtargetsclosed(page=1):
                                        description=form.description.data, subject=form.subject.data,
                                        status=form.status.data, lastCrawl=None, totalTweets=0,
                                        added=datetime.now(), woeid=None, index=form.index.data, schedule=None, scheduleInterval=None, scheduleText = None)
-            addLog = models.CRAWLLOG(tag_title=form.title.data, event_start=datetime.now(), event_text='ADDED TO DB')
+            addLog = models.CRAWLLOG(tag_title=form.title.data, event_start=datetime.now(), event_text='Target added')
             addTarget.logs.append(addLog)
             db.session.add(addTarget)
             db.session.commit()
@@ -350,7 +360,7 @@ def userlist(id,page=1):
                                        status=form.status.data, lastCrawl=None, totalTweets=0,
                                        added=datetime.now(), woeid=None, index=form.index.data, schedule=None, scheduleInterval=None , scheduleText = None)
 
-            addLog = models.CRAWLLOG(tag_title=form.title.data, event_start=datetime.now(), event_text='ADDED TO DB')
+            addLog = models.CRAWLLOG(tag_title=form.title.data, event_start=datetime.now(), event_text='Target added')
             addTarget.logs.append(addLog)
             db.session.add(addTarget)
             db.session.commit()
@@ -379,7 +389,7 @@ def searchlist(id,page=1):
                                        description=form.description.data, subject=form.subject.data,
                                        status=form.status.data, lastCrawl=None, totalTweets=0,
                                        added=datetime.now(), woeid=None, index=form.index.data, schedule=None, scheduleInterval=None , scheduleText = None)
-            addLog = models.CRAWLLOG(tag_title=form.title.data, event_start=datetime.now(), event_text='ADDED TO DB')
+            addLog = models.CRAWLLOG(tag_title=form.title.data, event_start=datetime.now(), event_text='Target added')
             addTarget.logs.append(addLog)
             db.session.add(addTarget)
             db.session.commit()
@@ -420,7 +430,7 @@ def twittertargetDetail(id):
     if request.method == 'POST' and form.validate_on_submit():
         try:
             form.populate_obj(object)
-            addLog = models.CRAWLLOG(tag_title=form.title.data, event_start=datetime.now(), event_text='DESCRIPTION ALTERED')
+            addLog = models.CRAWLLOG(tag_title=form.title.data, event_start=datetime.now(), event_text='Description modified')
             object.logs.append(addLog)
             db.session.add(object)
             db.session.commit()
@@ -493,7 +503,7 @@ def collectionDetail(id, page=1):
                                        status=targetForm.status.data, lastCrawl=None, totalTweets=0,
                                        added=datetime.now(), woeid=None, index=targetForm.index.data, schedule=None, scheduleInterval=None, scheduleText = None)
 
-            addLog = models.CRAWLLOG(tag_title=targetForm.title.data, event_start=datetime.now(), event_text='ADDED TO DB')
+            addLog = models.CRAWLLOG(tag_title=targetForm.title.data, event_start=datetime.now(), event_text='Target added')
             #addTarget.logs.append(addLog)
             #db.session.add(addTarget)
             object.tags.append(addTarget)
@@ -517,7 +527,7 @@ def collectionDetail(id, page=1):
                                        schedule=None, scheduleInterval=None, scheduleText = None)
 
             addLog = models.CRAWLLOG(tag_title=targetForm.title.data, event_start=datetime.now(),
-                                     event_text='ADDED TO DB')
+                                     event_text='Target added')
             # addTarget.logs.append(addLog)
             # db.session.add(addTarget)
             object.tags.append(addTarget)
@@ -804,6 +814,15 @@ def deleteexport(filename):
 def settings():
     stopWords = models.STOPWORDS.query.all()
     stopForm = stopWordsForm()
+    passForm = passwordForm()
+
+    if request.method == 'POST' and passForm.validate_on_submit():
+        #TWITTER = models.TWITTER.query.filter(models.TWITTER.row_id == id).first()
+        USERS = models.USERS.query.filter(models.USERS.row_id == 1).first()
+        USERS.passw = generate_password_hash(passForm.password.data)
+        db.session.commit()
+        flash(u'Admin password changed', 'success')
+
 
     if request.method == 'POST' and stopForm.validate_on_submit():
 
@@ -824,7 +843,7 @@ def settings():
     workers = Worker.all(connection=Redis())
 
 
-    return render_template("settings.html", stopWords = stopWords, stopForm = stopForm, diskList=diskList, workers=workers,qlen=len(q),intqlen=len(eq))
+    return render_template("settings.html", stopWords = stopWords, stopForm = stopForm, passForm = passForm, diskList=diskList, workers=workers,qlen=len(q),intqlen=len(eq))
 
 
 '''Route to remove stop word'''
