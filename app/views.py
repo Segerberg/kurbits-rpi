@@ -92,6 +92,7 @@ def index():
 
 '''SEARCH'''
 @app.route('/search', methods=['GET', 'POST'])
+@auth.login_required
 def search():
     form =SearchForm()
     if request.method == 'POST':
@@ -101,6 +102,7 @@ def search():
 
 '''SEARCH RESULTS'''
 @app.route('/search/<query>/<int:page>', methods=['GET', 'POST'])
+@auth.login_required
 def search_results(query,page=1):
     form = SearchForm()
     results = models.SEARCH.query.filter(models.SEARCH.text.like(u'%{}%'.format(query))).paginate(page, POSTS_PER_PAGE, False)
@@ -112,6 +114,7 @@ TWITTER
 
 '''USER-TIMELINES'''
 @app.route('/twittertargets/<int:page>', methods=['GET', 'POST'])
+@auth.login_required
 def twittertargets(page=1):
     TWITTER = models.TWITTER.query.filter(models.TWITTER.targetType=='User').filter(models.TWITTER.status==1).order_by(models.TWITTER.title).paginate(page, TARGETS_PER_PAGE,False)
     form = twitterTargetForm(prefix='form')
@@ -140,6 +143,7 @@ def twittertargets(page=1):
 
 '''USER-TIMELINES-CLOSED'''
 @app.route('/twittertargetsclosed/<int:page>', methods=['GET', 'POST'])
+@auth.login_required
 def twittertargetsclosed(page=1):
     TWITTER = models.TWITTER.query.filter(models.TWITTER.targetType=='User').filter(models.TWITTER.status==0).order_by(models.TWITTER.title).paginate(page, TARGETS_PER_PAGE,False)
     form = twitterTargetForm(prefix='form')
@@ -170,6 +174,7 @@ def twittertargetsclosed(page=1):
 
 '''TRENDS'''
 @app.route('/twittertrends', methods=['GET', 'POST'])
+@auth.login_required
 def twittertrends():
     filterTime = datetime.utcnow() - timedelta(minutes=60)
     loc = models.TRENDS_LOC.query.all()
@@ -198,6 +203,7 @@ def twittertrends():
 
 """Route to add Trend to Search"""
 @app.route('/addtwittertrend/<id>', methods=['GET', 'POST'])
+@auth.login_required
 def addtwittertrend(id):
     trendAll = models.TWITTER_TRENDS.query.all()
     if request.method == 'POST':
@@ -222,6 +228,7 @@ def addtwittertrend(id):
 
 """Route to clear Trends"""
 @app.route('/cleartwittertrend/<id>', methods=['GET', 'POST'])
+@auth.login_required
 def cleartwittertrend(id):
     trendAll = models.TRENDS_LOC.query.filter(models.TRENDS_LOC.row_id==id).all()
     print (request.url_rule)
@@ -235,6 +242,7 @@ def cleartwittertrend(id):
 
 """Route to delete Trend Location"""
 @app.route('/deletetrendlocation/<id>', methods=['GET', 'POST'])
+@auth.login_required
 def deleteTrendLocation(id):
     trendLocation = models.TRENDS_LOC.query.filter(models.TRENDS_LOC.row_id==id).first()
     db.session.delete(trendLocation)
@@ -243,6 +251,7 @@ def deleteTrendLocation(id):
 
 """Route to remove Trend from Search"""
 @app.route('/removetwittertrend/<id>', methods=['GET', 'POST'])
+@auth.login_required
 def removetwittertrend(id):
     trendAll = models.TWITTER_TRENDS.query.all()
     if request.method == 'POST':
@@ -254,6 +263,7 @@ def removetwittertrend(id):
 
 """Route to refresh trends """
 @app.route('/refreshtwittertrend', methods=['GET', 'POST'])
+@auth.login_required
 def refreshtwittertrend():
     eq.enqueue(getTrends)
     return redirect((url_for('twittertrends')))
@@ -261,8 +271,8 @@ def refreshtwittertrend():
 
 '''API-SEARCH-TARGETS'''
 @app.route('/twittersearchtargets/<int:page>', methods=['GET', 'POST'])
+@auth.login_required
 def twittersearchtargets(page=1):
-
     TWITTER = models.TWITTER.query.filter(models.TWITTER.targetType == 'Search').filter(models.TWITTER.status==1).order_by(models.TWITTER.title).paginate(page, TARGETS_PER_PAGE, False)
     templateType = "Search"
     openClosed = "Open"
@@ -289,6 +299,7 @@ def twittersearchtargets(page=1):
 
 '''API-SEARCH-TARGETS-CLOSED'''
 @app.route('/twittersearchtargetsclosed/<int:page>', methods=['GET', 'POST'])
+@auth.login_required
 def twittersearchtargetsclosed(page=1):
     TWITTER = models.TWITTER.query.filter(models.TWITTER.targetType == 'Search').filter(models.TWITTER.status==0).order_by(models.TWITTER.title).paginate(page, TARGETS_PER_PAGE, False)
     templateType = "Search"
@@ -315,6 +326,7 @@ def twittersearchtargetsclosed(page=1):
 
 '''COLLECTIONS'''
 @app.route('/collections/<int:page>', methods=['GET', 'POST'])
+@auth.login_required
 def collections(page=1):
     COLLECTIONS = models.COLLECTION.query.filter(models.COLLECTION.status == '1').order_by(models.COLLECTION.title).paginate(page, TARGETS_PER_PAGE, False)
 
@@ -347,6 +359,7 @@ def collections(page=1):
 
 '''Route to view archived user tweets '''
 @app.route('/usertweets/<id>/<int:page>', methods=['GET', 'POST'])
+@auth.login_required
 def userlist(id,page=1):
     id=id
     print (id)
@@ -378,6 +391,7 @@ def userlist(id,page=1):
 
 '''Route to view archived user tweets from twitter searches '''
 @app.route('/searchtweets/<id>/<int:page>', methods=['GET', 'POST'])
+@auth.login_required
 def searchlist(id,page=1):
     id=id
     results = models.SEARCH.query.filter(models.SEARCH.source==id).order_by(models.SEARCH.created_at.desc()).paginate(page, POSTS_PER_PAGE, False)
@@ -406,8 +420,8 @@ def searchlist(id,page=1):
 
 '''Route to detail view of twitter user/search target'''
 @app.route('/twittertargetsdetail/<id>', methods=['GET', 'POST'])
+@auth.login_required
 def twittertargetDetail(id):
-
     TWITTER = models.TWITTER.query.filter(models.TWITTER.row_id == id).first()
     object = models.TWITTER.query.get_or_404(id)
     CRAWLLOG = models.CRAWLLOG.query.order_by(models.CRAWLLOG.event_start.desc()).filter(models.CRAWLLOG.tag_id==id).limit(10)
@@ -447,6 +461,7 @@ def twittertargetDetail(id):
 
 '''Route to detail view of collections'''
 @app.route('/collectiondetail/<id>/<int:page>', methods=['GET', 'POST'])
+@auth.login_required
 def collectionDetail(id, page=1):
     object = models.COLLECTION.query.get_or_404(id)
     #targets = models.TWITTER.query.all()
@@ -546,6 +561,7 @@ def collectionDetail(id, page=1):
 Route to add collection <--> target association
 '''
 @app.route('/addassociation/<id>/<target>', methods=['GET','POST'])
+@auth.login_required
 def addCollectionAssociation(id, target):
     object =  db.session.query(models.COLLECTION).get(id)
     linkedTarget = db.session.query(models.TWITTER).filter(models.TWITTER.row_id == target).one()
@@ -559,6 +575,7 @@ def addCollectionAssociation(id, target):
 Route to remove twitter-target
 '''
 @app.route('/removetwittertarget/<id>', methods=['GET','POST'])
+@auth.login_required
 def removeTwitterTarget(id):
     object = models.TWITTER.query.get_or_404(id)
     db.session.delete(object)
@@ -572,6 +589,7 @@ def removeTwitterTarget(id):
 Route to reactivate twitter-target
 '''
 @app.route('/reactivatetwittertarget/<id>', methods=['GET','POST'])
+@auth.login_required
 def reactivateTwitterTarget(id):
     object = models.TWITTER.query.get_or_404(id)
     object.status = 1
@@ -586,6 +604,7 @@ def reactivateTwitterTarget(id):
 Route to remove collection
 '''
 @app.route('/removecollection/<id>', methods=['GET','POST'])
+@auth.login_required
 def removeCollection(id):
     object = models.COLLECTION.query.get_or_404(id)
     db.session.delete(object)
@@ -599,6 +618,7 @@ Route to remove collection <--> target association
 '''
 
 @app.route('/removeassociation/<id>/<target>', methods=['GET','POST'])
+@auth.login_required
 def removeCollectionAssociation(id, target):
     object =  db.session.query(models.COLLECTION).get(id)
     linkedTarget = db.session.query(models.TWITTER).filter(models.TWITTER.row_id == target).one()
@@ -612,6 +632,7 @@ def removeCollectionAssociation(id, target):
 Route to call twarc-archive
 '''
 @app.route('/starttwittercrawl/<id>', methods=['GET','POST'])
+@auth.login_required
 def startTwitterCrawl(id):
     with app.app_context():
 
@@ -636,6 +657,7 @@ Route to call collection twarc-archive
 '''
 
 @app.route('/startcollectioncrawl/<id>', methods=['GET','POST'])
+@auth.login_required
 def startCollectionCrawl(id):
     with app.app_context():
         #jobId = str(uuid.uuid4())
@@ -652,6 +674,7 @@ def startCollectionCrawl(id):
 Route to call followers
 '''
 @app.route('/followers/<id>', methods=['GET','POST'])
+@auth.login_required
 def followers(id):
 
     eq.enqueue(Followers, id, timeout=86400)
@@ -662,6 +685,7 @@ def followers(id):
 Route to call hashtag report
 '''
 @app.route('/hash/<id>', methods=['GET','POST'])
+@auth.login_required
 def hash(id):
     if '/twittertargets' in request.referrer:
         eq.enqueue(hashTags, id, timeout=86400)
@@ -679,6 +703,7 @@ def hash(id):
 Route to call hash
 '''
 @app.route('/topuser/<id>', methods=['GET','POST'])
+@auth.login_required
 def top_users(id):
     if '/twittertargets' in request.referrer:
         eq.enqueue(topUsers, id, timeout=86400)
@@ -696,6 +721,7 @@ def top_users(id):
 Route to call dehydrate report 
 '''
 @app.route('/dehydrate/<id>', methods=['GET','POST'])
+@auth.login_required
 def dehydrate(id):
     if '/twittertargets' in request.referrer:
         eq.enqueue(dehydrateUserSearch, id, timeout=86400)
@@ -714,6 +740,7 @@ def dehydrate(id):
 Route to call urls report 
 '''
 @app.route('/urls/<id>', methods=['GET','POST'])
+@auth.login_required
 def urls(id):
     if '/twittertargets' in request.referrer:
         eq.enqueue(urlsUserSearch, id, timeout=86400)
@@ -732,6 +759,7 @@ def urls(id):
 Enables Functionality to create Heritrix crawler-beans
 '''
 @app.route('/catalogtemplate/<id>', methods=['GET','POST'])
+@auth.login_required
 def catalogTemplate(id):
     export_uuid = uuid.uuid4()
     object = models.TWITTER.query.get_or_404(id)
@@ -744,6 +772,7 @@ def catalogTemplate(id):
 Route to call wordCloud
 '''
 @app.route('/wordcloud/<id>', methods=['GET','POST'])
+@auth.login_required
 def wordc(id):
     if '/twittertargets' in request.referrer:
         eq.enqueue(wordCloud, id, timeout=86400)
@@ -761,6 +790,7 @@ def wordc(id):
 Route to call CSV
 '''
 @app.route('/t_csv/<id>', methods=['GET','POST'])
+@auth.login_required
 def t_csv(id):
     if '/twittertargets' in request.referrer:
         eq.enqueue(csvUserSearch, id, timeout=86400)
@@ -781,6 +811,7 @@ def t_csv(id):
 Route to send exports  
 '''
 @app.route('/export/<filename>')
+@auth.login_required
 def export(filename):
     return send_from_directory(app.config['EXPORTS_BASEDIR'],
                                filename)
@@ -788,6 +819,7 @@ def export(filename):
 Route to send joblog 
 '''
 @app.route('/joblog/<id>/<filename>')
+@auth.login_required
 def joblog(id,filename):
     object = models.TWITTER.query.get_or_404(id)
     return send_from_directory(os.path.join(app.config['ARCHIVE_BASEDIR'],object.title),
@@ -797,6 +829,7 @@ def joblog(id,filename):
 Route to delete exports  
 '''
 @app.route('/deleteexport/<filename>')
+@auth.login_required
 def deleteexport(filename):
     try:
         os.remove(os.path.join(app.config['EXPORTS_BASEDIR'],filename))
@@ -811,6 +844,7 @@ def deleteexport(filename):
 
 '''SETTINGS ROUTE'''
 @app.route('/settings', methods=['GET', 'POST'])
+@auth.login_required
 def settings():
     stopWords = models.STOPWORDS.query.all()
     stopForm = stopWordsForm()
@@ -848,6 +882,7 @@ def settings():
 
 '''Route to remove stop word'''
 @app.route('/removestopword/<id>', methods=['GET', 'POST'])
+@auth.login_required
 def removestopword(id):
     object = object =  db.session.query(models.STOPWORDS).get(id)
     db.session.delete(object)
@@ -863,6 +898,7 @@ def allowed_file(filename):
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @app.route('/uploadstopwords', methods=['GET','POST'])
+@auth.login_required
 def uploadStopWords():
 
     if request.method == 'POST':
