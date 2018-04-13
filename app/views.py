@@ -876,7 +876,6 @@ def settings():
     #REDIS
     workers = Worker.all(connection=Redis())
 
-
     return render_template("settings.html", stopWords = stopWords, stopForm = stopForm, passForm = passForm, diskList=diskList, workers=workers,qlen=len(q),intqlen=len(eq))
 
 
