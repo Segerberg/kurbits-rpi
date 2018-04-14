@@ -14,6 +14,7 @@ from .wordcloud import wordCloud, wordCloudCollection
 from .urls import urlsUserSearch, urlsCollection
 from .tweets2csv import csvUserSearch, csvCollection
 from .scheduleCollection import startScheduleCollectionCrawl
+from .IA_save import push
 from config import POSTS_PER_PAGE, REDIS_DB, MAP_VIEW,MAP_ZOOM,TARGETS_PER_PAGE,EXPORTS_BASEDIR,ARCHIVE_BASEDIR, TREND_UPDATE
 from datetime import datetime, timedelta
 from redis import Redis
@@ -681,6 +682,16 @@ def followers(id):
     flash(u'Getting followers, please refresh page!', 'success')
     return redirect(request.referrer)
 
+'''
+Route to push tweet to IA
+'''
+@app.route('/push/<id>', methods=['GET','POST'])
+@auth.login_required
+def IA_Push(id):
+
+    eq.enqueue(push, id, timeout=2000)
+    flash(u'Pushing tweet to Internet Archive', 'success')
+    return redirect(request.referrer)
 '''
 Route to call hashtag report
 '''

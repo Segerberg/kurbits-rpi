@@ -80,12 +80,15 @@ def twittercrawl(id):
 
                 add = models.SEARCH(tweet["user"]["name"],
                                     tweet["user"]["screen_name"],
+                                    tweet["id"],
                                     tweet["full_text"],
                                     datetime.strptime(tweet['created_at'], '%a %b %d %H:%M:%S +0000 %Y'),
                                     TWITTER.row_id,
                                     tweet['retweet_count'],
                                     '',
-                                    'twitter')
+                                    'twitter',
+                                    None,
+                                    0)
                 db.session.add(add)
 
         if fh:
