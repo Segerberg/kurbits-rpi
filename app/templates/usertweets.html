@@ -5,6 +5,7 @@
 {% else %}
 {% if twitterTarget %}<a href="{{ url_for('twittertargetDetail',  id=twitterTarget.row_id) }}">@{{id}}</a>{% else %} @{{id}} {% endif %} {% if not twitterTarget %}<button class="btn btn-default pull-right" data-toggle="modal" data-target="#myModal">Add</button>{% endif %}
 {% endif %}
+
 <!-- Modal -->
 <h5>
     <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
@@ -97,7 +98,7 @@
         {% else %}
         <a href="{{ url_for('IA_Push', id=result.row_id)}}"><i class="fa fa-sign-in fa-fw"></i>Push to Internet Archive</a>
         <br>
-        <a href="{{result.ia_uri}}"><i class="fa fa-eye fa-fw"></i>View in Internet Archive</a> ({{result.ia_cap_count}} Captures)
+        <a target="_blank" href="{{result.ia_uri}}"><i class="fa fa-eye fa-fw"></i>View in Internet Archive</a> ({{result.ia_cap_count}} Captures)
         {% endif %}
     </footer>
 
@@ -197,4 +198,5 @@ $('#hoverMe').hover(function () {
   return t;
 }(document, "script", "twitter-wjs"));
 </script>
+
 {% endblock %}

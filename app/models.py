@@ -25,6 +25,9 @@ class TWITTER(db.Model):
     schedule = db.Column(db.String(250))
     scheduleInterval = db.Column(db.Integer)
     scheduleText = db.Column(db.String(250))
+    ia_uri = db.Column(db.String(1000))
+    ia_cap_count = db.Column(db.Integer)
+    ia_cap_date = db.Column(db.DateTime)
     logs = db.relationship("CRAWLLOG", backref='twitter', lazy=True, cascade="save-update, merge, delete")
     exports = db.relationship("EXPORTS", backref='twitter_us_exports', lazy=True, cascade="save-update, merge, delete")
     tags = db.relationship('COLLECTION', secondary=assoc_twitter_collections,back_populates='tags', lazy='subquery')
@@ -32,7 +35,12 @@ class TWITTER(db.Model):
 
 
 
-    def __init__(self, title, searchString, creator, targetType, description, subject, status, lastCrawl, totalTweets, added, woeid, index,schedule, scheduleInterval,scheduleText):
+    def __init__(self, title, searchString, creator,
+                 targetType, description, subject,
+                 status, lastCrawl, totalTweets,
+                 added, woeid, index,
+                 schedule, scheduleInterval,scheduleText,
+                 ia_uri,ia_cap_count, ia_cap_date):
         self.title = title
         self.searchString = searchString
         self.creator = creator
@@ -48,6 +56,9 @@ class TWITTER(db.Model):
         self.totalTweets = totalTweets
         self.scheduleInterval = scheduleInterval
         self.scheduleText = scheduleText
+        self.ia_uri = ia_uri
+        self.ia_cap_count = ia_cap_count
+        self.ia_cap_date = ia_cap_date
 
 class COLLECTION(db.Model):
     __tablename__ = 'COLLECTION'
