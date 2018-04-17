@@ -398,10 +398,19 @@ def userlist(id,page=1):
 
     return render_template("usertweets.html", results=results,id=id, twitterTarget=twitterTarget,form=form)
 
+'''Route to view IA archived user tweets '''
+@app.route('/ia_tweets/<id>/<int:page>', methods=['GET', 'POST'])
+@auth.login_required
+def IA_tweets(id,page=1):
+    twitterTarget = models.TWITTER.query.filter(models.TWITTER.title == id).first()
+    results = models.SEARCH.query.filter(models.SEARCH.username==id).filter(models.SEARCH.ia_uri != None).order_by(models.SEARCH.ia_cap_date.desc()).paginate(page, 100, False)
+    return render_template("ia_tweets.html", results=results, id=id, twitterTarget=twitterTarget)
+
+
 '''Route to view archived user tweets from twitter searches '''
 @app.route('/searchtweets/<id>/<int:page>', methods=['GET', 'POST'])
 @auth.login_required
-def searchlist(id,page=1):
+def searchlist(id, page=1):
     id=id
     results = models.SEARCH.query.filter(models.SEARCH.source==id).order_by(models.SEARCH.created_at.desc()).paginate(page, POSTS_PER_PAGE, False)
     twitterTarget = models.TWITTER.query.filter(models.TWITTER.row_id == id).first()
@@ -434,8 +443,9 @@ def searchlist(id,page=1):
 def twittertargetDetail(id):
     TWITTER = models.TWITTER.query.filter(models.TWITTER.row_id == id).first()
     object = models.TWITTER.query.get_or_404(id)
-    CRAWLLOG = models.CRAWLLOG.query.order_by(models.CRAWLLOG.event_start.desc()).filter(models.CRAWLLOG.tag_id==id).limit(10)
+    CRAWLLOG = models.CRAWLLOG.query.order_by(models.CRAWLLOG.event_start.desc()).filter(models.CRAWLLOG.tag_id==id).limit(100)
     EXPORTS = models.EXPORTS.query.order_by(models.EXPORTS.row_id.desc()).filter(models.EXPORTS.twitter_id==id)
+    SEARCH = models.SEARCH.query.filter(models.SEARCH.username==TWITTER.title).filter(models.SEARCH.ia_uri != None ).limit(5)
     form = twitterTargetForm(prefix='form',obj=object)
     assForm = collectionAddForm(prefix="assForm")
     linkedCollections = models.TWITTER.query. \
@@ -467,7 +477,7 @@ def twittertargetDetail(id):
 
 
 
-    return render_template("twittertargetdetail.html", TWITTER=TWITTER, form=form, CRAWLLOG=CRAWLLOG, EXPORTS=EXPORTS, linkedCollections=linkedCollections, assForm=assForm, l=l, ref = request.referrer)
+    return render_template("twittertargetdetail.html", TWITTER=TWITTER, form=form, CRAWLLOG=CRAWLLOG, EXPORTS=EXPORTS, SEARCH = SEARCH,linkedCollections=linkedCollections, assForm=assForm, l=l, ref = request.referrer)
 
 '''Route to detail view of collections'''
 @app.route('/collectiondetail/<id>/<int:page>', methods=['GET', 'POST'])
@@ -696,12 +706,12 @@ def followers(id):
 '''
 Route to push tweet to IA
 '''
-@app.route('/push/<id>', methods=['GET','POST'])
+@app.route('/push/<id>/<type>', methods=['GET','POST'])
 @auth.login_required
-def IA_Push(id):
-    if '/twittertargets' in request.referrer:
-        eq.enqueue(pushAccount, id, timeout=2000)
-        flash(u'Pushing Account to Internet Archive', 'success')
+def IA_Push(id, type):
+    if type == 'timeline':
+            eq.enqueue(pushAccount, id, timeout=2000)
+            flash(u'Pushing Account to Internet Archive', 'success')
     else:
         eq.enqueue(push, id, timeout=2000)
         flash(u'Pushing tweet to Internet Archive', 'success')

@@ -85,9 +85,9 @@ $('.twitter').tweetify();
      <footer>
          <i class="fa fa-retweet fa-fw" ></i>{{result.retweets}}<br>
          <a href="#"><time>{{result.created_at}}</time></a>
-          {% if not result.ia_uri %}<a href="{{ url_for('IA_Push', id=result.row_id)}}"><i class="fa fa-sign-in fa-fw"></i>Push to Internet Archive</a>
+          {% if not result.ia_uri %}<a href="{{ url_for('IA_Push', id=result.row_id, type='tweet')}}"><i class="fa fa-sign-in fa-fw"></i>Push to Internet Archive</a>
         {% else %}
-        <a href="{{ url_for('IA_Push', id=result.row_id)}}"><i class="fa fa-sign-in fa-fw"></i>Push to Internet Archive</a>
+        <a href="{{ url_for('IA_Push', id=result.row_id, type='tweet')}}"><i class="fa fa-sign-in fa-fw"></i>Push to Internet Archive</a>
         <br>
         <a href="{{result.ia_uri}}"><i class="fa fa-eye fa-fw"></i>View in Internet Archive</a> ({{result.ia_cap_count}} Captures)
         {% endif %}

@@ -21,11 +21,13 @@ def push(id):
             if "Location" in r.headers:
                 tweet.ia_uri = r.headers["Location"]
                 tweet.ia_cap_count = tweet.ia_cap_count + 1
+                tweet.ia_cap_date = datetime.now()
                 db.session.commit()
 
             elif "Content-Location" in r.headers:
                 tweet.ia_uri = "https://web.archive.org"+r.headers["Content-Location"]
                 tweet.ia_cap_count = tweet.ia_cap_count + 1
+                tweet.ia_cap_date = datetime.now()
                 db.session.commit()
 
             else:
@@ -33,11 +35,13 @@ def push(id):
                     if 'Location' in r2.headers:
                         tweet.ia_uri = r2.headers['Location']
                         tweet.ia_cap_count = tweet.ia_cap_count + 1
+                        tweet.ia_cap_date = datetime.now()
                         db.session.commit()
 
                     if 'Content-Location' in r2.headers:
                         tweet.ia_uri = r2.headers['Content-Location']
                         tweet.ia_cap_count = tweet.ia_cap_count + 1
+                        tweet.ia_cap_date = datetime.now()
                         db.session.commit()
 
         msg =  "No HTTP Location/Content-Location header is returned in the response"
@@ -61,14 +65,12 @@ def pushAccount(id):
         # extract the link to the archived copy
         if (r != None):
             if "Location" in r.headers:
-                print(r.headers["Location"])
                 tweet.ia_uri = r.headers["Location"]
                 tweet.ia_cap_count = tweet.ia_cap_count + 1
                 tweet.ia_cap_date = datetime.now()
                 db.session.commit()
 
             elif "Content-Location" in r.headers:
-                print ("https://web.archive.org"+r.headers["Content-Location"])
                 tweet.ia_uri = "https://web.archive.org"+r.headers["Content-Location"]
                 tweet.ia_cap_count = tweet.ia_cap_count + 1
                 tweet.ia_cap_date = datetime.now()
@@ -77,14 +79,12 @@ def pushAccount(id):
             else:
                 for r2 in r.history:
                     if 'Location' in r2.headers:
-                        print (r2.headers['Location'])
                         tweet.ia_uri = r2.headers['Location']
                         tweet.ia_cap_count = tweet.ia_cap_count + 1
                         tweet.ia_cap_date = datetime.now()
                         db.session.commit()
 
                     if 'Content-Location' in r2.headers:
-                        print(r2.headers['Content-Location'])
                         tweet.ia_uri = r2.headers['Content-Location']
                         tweet.ia_cap_count = tweet.ia_cap_count + 1
                         tweet.ia_cap_date = datetime.now()

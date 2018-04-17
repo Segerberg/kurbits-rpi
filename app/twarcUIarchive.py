@@ -88,7 +88,8 @@ def twittercrawl(id):
                                     '',
                                     'twitter',
                                     None,
-                                    0)
+                                    0,
+                                    None)
                 db.session.add(add)
 
         if fh:

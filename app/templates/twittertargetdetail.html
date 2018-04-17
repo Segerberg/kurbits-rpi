@@ -23,7 +23,6 @@
                      <button type="button" class="btn btn-primary btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Actions <span class="caret"></span></button>
                      <ul class="dropdown-menu">
                          <li><a href="{{ url_for('startTwitterCrawl', id=TWITTER.row_id) }}"><i class="fa fa-download fa-fw"></i> Archive</a></li>
-                         {% if TWITTER.targetType == 'User' %}<li><a href="{{ url_for('IA_Push', id=TWITTER.row_id) }}"><i class="fa fa-sign-in fa-fw"></i> Push to Internet Archive</a></li>{% endif %}
                          <li><a data-toggle="modal" href="#myModal" data-target="#myModal"><i class="fa fa-pencil fa-fw"></i> Edit</a></li>
                          <li role="separator" class="divider"></li>
                          <li><a href="{{ url_for('removeTwitterTarget', id=TWITTER.row_id) }}" onclick="return confirm('Are you sure you want to delete?')"><i class="fa fa-trash fa-fw"></i> Delete</a></li>
@@ -77,16 +76,7 @@
                 </table>
                 </div>
                 {% endif %}
-                {% if TWITTER.ia_uri %}
-                   <div class="col-lg-12">
-                     <h5><span class="label label-default">IA Wayback Machine</span></h5>
-                <ul class="list-unstyled">
-                    <li><b style="color:grey">Url:</b> <a target="_blank" href="https://web.archive.org/web/*/https://twitter.com/{{TWITTER.title}}">https://web.archive.org/web/*/https://twitter.com/{{TWITTER.title}} </a> </li>
-                    <li><b style="color:grey">Last Capture:</b> <a target="_blank" href="{{TWITTER.ia_uri}}"><i class="fa fa-eye fa-fw"></i> {{ TWITTER.ia_cap_date.strftime('%Y-%m-%d %H:%M') }} </a></li>
-                    <li><b style="color:grey">Number Of Captures:</b> {{TWITTER.ia_cap_count}} </li>
-                </ul>
-                   </div>
-                {% endif %}
+
                             <!-- Modal -->
                 <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
                     <div class="modal-dialog">
@@ -168,7 +158,7 @@
      <div class="col-lg-8">
          <div class="panel panel-default">
              <div class="panel-heading">
-                 <i class="fa fa-book fa-fw"></i> EXPORTS
+                 <i class="fa fa-book fa-fw"></i> Exports
                  <div class="btn-group pull-right">
                      <button type="button" class="btn btn-primary btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Create <span class="caret"></span></button>
                      <ul class="dropdown-menu">
@@ -219,8 +209,66 @@
              </div>
          </div>
      </div>
+     {% if TWITTER.targetType == 'User' %}
+     <div class="col-lg-12">
+         <div class="panel panel-default">
+             <div class="panel-heading">
+                 <i class="fa fa-university fa-fw"></i> Internet Archive
+                 <div class="btn-group pull-right">
+                     <button type="button" class="btn btn-primary btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Actions <span class="caret"></span></button>
+                     <ul class="dropdown-menu">
+
+                        <li><a href="{{ url_for('IA_Push', type='timeline',id=TWITTER.row_id) }}"><i class="fa fa-sign-in fa-fw"></i> Push Timline</a></li>
+                     </ul>
+                 </div>
+             </div>
+             <div class="panel-body">
+                 {% if TWITTER.ia_uri %}
+                        <h5><span class="label label-default">Timeline captures</span></h5>
+                <ul class="list-unstyled">
+                    <li><b style="color:grey">Url:</b> <a target="_blank" href="https://web.archive.org/web/*/https://twitter.com/{{TWITTER.title}}">https://web.archive.org/web/*/https://twitter.com/{{TWITTER.title}} </a> </li>
+                    <li><b style="color:grey">Last Capture:</b> <a target="_blank" href="{{TWITTER.ia_uri}}"><i class="fa fa-eye fa-fw"></i> {{ TWITTER.ia_cap_date.strftime('%Y-%m-%d %H:%M') }} </a></li>
+                    <li><b style="color:grey">Number Of Captures:</b> {{TWITTER.ia_cap_count}} </li>
+                </ul>
+                 {% endif %}
+                 <div class="table-responsive">
+                 <table class="table table-bordered">
+                      <col width="60">
+                     <col width="10">
+                     <col width="10">
+                     <col width="10">
+                     <thead>
+                     <h5><span class="label label-default">Tweet captures</span></h5>
+                     <tr>
+                         <th><i class="fa fa-twitter fa-fw"></i> Tweet</th>
+                         <th><i class="fa fa-clock-o fa-fw"></i> Last Capture</th>
+                         <th><i class="fa fa-sign-in fa-fw"></i> Captures</th>
+                         <th><i class="fa fa-rocket fa-fw"></i> Actions</th>
 
 
+                     </tr>
+                     </thead>
+                     <tbody>
+                      {% for ia in SEARCH %}
+
+
+                     <tr>
+                     <td><a target="_blank" href="{{ia.ia_uri}}">{{ia.text}}</a></td>
+                         <td>{{ia.ia_cap_date.strftime('%Y-%m-%d %H:%M')}}</td>
+                     <td>{{ia.ia_cap_count}}</td>
+
+                         <td><a href="{{ url_for('IA_Push', id=ia.row_id, type='tweet')}}" class="btn btn-default btn-xs"><i class="fa fa-sign-in fa-fw"></i>Push</a></td>
+                     </tr>
+                     {% endfor %}
+                     </tbody>
+                 </table>
+                     <a href="{{ url_for('IA_tweets', id=TWITTER.title, page=1)}}" class="btn btn-default btn-xs"><i class="fa fa-eye fa-fw"></i>View all</a></td>
+                 </div>
+             </div>
+         </div>
+     </div>
+
+{% endif %}
      <div class="col-lg-12">
          <div class="panel panel-default">
              <div class="panel-heading"><a data-toggle="collapse" href="#collapse1">

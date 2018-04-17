@@ -179,8 +179,9 @@ class SEARCH(db.Model):
     type =  db.Column(db.String(50))
     ia_uri = db.Column(db.String(1000))
     ia_cap_count = db.Column(db.Integer)
+    ia_cap_date = db.Column(db.DateTime)
 
-    def __init__(self, screen_name, username, tweet_id, text, created_at, source, retweets,image_url,type,ia_uri,ia_cap_count):
+    def __init__(self, screen_name, username, tweet_id, text, created_at, source, retweets,image_url,type,ia_uri,ia_cap_count,ia_cap_date):
         self.screen_name = screen_name
         self.username = username
         self.tweet_id = tweet_id
@@ -192,6 +193,7 @@ class SEARCH(db.Model):
         self.type = type
         self.ia_uri = ia_uri
         self.ia_cap_count = ia_cap_count
+        self.ia_cap_date = ia_cap_date
 
         def __repr__(self):
             return '<Text %r>' % (self.text)

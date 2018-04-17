@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block pageHeader %}
+{% if twitterTarget %}<a href="{{ url_for('twittertargetDetail',  id=twitterTarget.row_id) }}">@{{id}}</a>{% else %} @{{id}} {% endif %} {% if not twitterTarget %}<button class="btn btn-default pull-right" data-toggle="modal" data-target="#myModal">Add</button>{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+ <i class="fa fa-university fa-fw"></i> Internet Archived Tweets</a><input class="pull-right"  placeholder="Filter..." type="text" id="targetInput" onkeyup="filterTable()">
+            </div>
+             <div class="panel-body">
+
+<div class="table-responsive">
+                 <table class="table table-bordered" id="tweetTable">
+
+                      <col width="60">
+                     <col width="10">
+                     <col width="10">
+                     <col width="10">
+                     <thead>
+
+                     <tr>
+                         <th><i class="fa fa-twitter fa-fw"></i> Tweet</th>
+                         <th><i class="fa fa-clock-o fa-fw"></i> Last Capture</th>
+                         <th><i class="fa fa-sign-in fa-fw"></i> Captures</th>
+                         <th><i class="fa fa-rocket fa-fw"></i> Actions</th>
+
+
+                     </tr>
+                     </thead>
+                     <tbody>
+                     {% for result in results.items %}
+
+
+                     <tr>
+                     <td><a target="_blank" href="{{result.ia_uri}}">{{result.text}}</a></td>
+                         <td>{{result.ia_cap_date.strftime('%Y-%m-%d %H:%M')}}</td>
+                     <td>{{result.ia_cap_count}}</td>
+
+                         <td><a href="{{ url_for('IA_Push', id=result.row_id, type='tweet')}}" class="btn btn-default btn-xs"><i class="fa fa-sign-in fa-fw"></i>Push</a></td>
+                     </tr>
+                     {% endfor %}
+                     </tbody>
+                 </table>
+
+                 </div>
+                                     <ul class = "pagination">
+{% if results.has_prev %}<li><a href="{{ url_for('IA_tweets', page=results.prev_num, id=id) }}">&laquo;</a></li>{% else %}{% endif %}
+{% for page in results.iter_pages() %}{% if page == None %} {% else %}  <li><a href="{{ url_for('IA_tweets', page=page, id=id) }}">{{page}}</a></li>{% endif %}{% endfor %}
+{% if results.has_next %}<li><a href="{{ url_for('IA_tweets', page=results.next_num, id=id) }}">&raquo;</a></li>{% else %}{% endif %}
+</ul>
+             </div>
+
+         </div>
+
+</div>
+<script>$('.collapse').collapse()</script>
+     </div>
+
+
+
+
+<script>
+function filterTable() {
+  var input, filter, table, tr, td, i;
+  input = document.getElementById("targetInput");
+  filter = input.value.toUpperCase();
+  table = document.getElementById("tweetTable");
+  tr = table.getElementsByTagName("tr");
+  for (i = 0; i < tr.length; i++) {
+    td = tr[i].getElementsByTagName("td")[0];
+    if (td) {
+      if (td.innerHTML.toUpperCase().indexOf(filter) > -1) {
+        tr[i].style.display = "";
+      } else {
+        tr[i].style.display = "none";
+      }
+    }
+  }
+}
+</script>
+<script>
+$(document).ready(function()
+    {
+        $("#tweetTable").tablesorter();
+    }
+);
+
+</script>
+{% endblock %}
+
+
+
