@@ -254,6 +254,21 @@ def deleteTrendLocation(id):
     db.session.commit()
     return redirect((url_for('twittertrends')))
 
+"""Route to delete Trend Location"""
+@app.route('/silencetrend/<id>', methods=['GET', 'POST'])
+@auth.login_required
+def silenceTrend(id):
+    if '/settings' in request.referrer:
+        trend = models.TWITTER_TRENDS.query.get_or_404(id)
+        trend.silence = False
+        db.session.commit()
+    else:
+        trend = models.TWITTER_TRENDS.query.get_or_404(id)
+        trend.silence = True
+        db.session.commit()
+
+    return redirect(request.referrer)
+
 """Route to remove Trend from Search"""
 @app.route('/removetwittertrend/<id>', methods=['GET', 'POST'])
 @auth.login_required
@@ -885,6 +900,7 @@ def settings():
     stopWords = models.STOPWORDS.query.all()
     stopForm = stopWordsForm()
     passForm = passwordForm()
+    silencedTrends = models.TWITTER_TRENDS.query.filter(models.TWITTER_TRENDS.silence == True).order_by(models.TWITTER_TRENDS.name.asc()).all()
 
     if request.method == 'POST' and passForm.validate_on_submit():
         #TWITTER = models.TWITTER.query.filter(models.TWITTER.row_id == id).first()
@@ -912,7 +928,7 @@ def settings():
     #REDIS
     workers = Worker.all(connection=Redis())
 
-    return render_template("settings.html", stopWords = stopWords, stopForm = stopForm, passForm = passForm, diskList=diskList, workers=workers,qlen=len(q),intqlen=len(eq))
+    return render_template("settings.html", stopWords = stopWords, stopForm = stopForm, passForm = passForm, diskList=diskList, workers=workers,qlen=len(q),intqlen=len(eq), silencedTrends = silencedTrends)
 
 
 '''Route to remove stop word'''

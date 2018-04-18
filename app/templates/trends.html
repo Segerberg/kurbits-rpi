@@ -96,14 +96,22 @@
                 <div class="list-group">
 
                     {%for t in trendAll %}
+                    {% if t.silence == False %}
 
 
                     {% if t.trend_loc == l.row_id %} <a href="{% if '#' in t.name %} https://twitter.com/hashtag/{{t.name.replace('#','')}} {% else %}https://twitter.com/search?q={{t.name}} {% endif %}" target="_blank" {% if t.saved == True %}  class="list-group-item list-group-item-success" {% else %}   class="list-group-item" {% endif %}> {{t.name}}<span class="text-muted small">   [{{t.collected.strftime('%Y-%m-%d %H:%M:%S')}}]</span>
-                        {% if t.saved == False %}<span class="pull-right text-muted small"> <form action="{{ url_for('addtwittertrend', id=t.name) }}" method="post" name="auth_name">
-                        <button class="btn btn-primary btn-xs pull-right" type="submit"><i class="fa fa-plus" aria-hidden="true"></i></button></form></span>{% else %}<span class="pull-right text-muted small">
+                        {% if t.saved == False %}
+                    <span class="pull-right text-muted small"> <form action="{{ url_for('silenceTrend', id=t.row_id) }}" method="post" name="auth_name">
+                        <button class="btn btn-warning btn-xs pull-right" onclick="return confirm('Are you sure you want silence {{t.name}}?')"type="submit"><i class="fa fa-eye-slash" aria-hidden="true"></i></button></form>
+                    </span>
+                    <span class="pull-right text-muted small"> <form action="{{ url_for('addtwittertrend', id=t.name) }}" method="post" name="auth_name">
+                        <button class="btn btn-success btn-xs pull-right" type="submit"><i class="fa fa-plus" aria-hidden="true"></i></button></form>
+                    </span>
+                    {% else %}<span class="pull-right text-muted small">
                         <form action="{{ url_for('removetwittertrend', id=t.name) }}" method="post" name="auth_name">
                         <button class="btn btn-danger btn-xs pull-right" type="submit" ><i class="fa fa-trash" aria-hidden="true"></i></button></form></span>{%endif%}{%endif%}
                     </a>
+                    {% endif %}
                     {%endfor%}
 
                 </div>
@@ -137,7 +145,7 @@
         }
 
     {%for l in loc %}
-    var customPopup = "<strong>{{l.name}}</strong><br>{%for t in trend %}{% if t.trend_loc == l.row_id %}<br>{{t.name}}{%endif%}{%endfor%}";
+    var customPopup = "<strong>{{l.name}}</strong><br>{%for t in trend %}{% if t.trend_loc == l.row_id and t.silence == False %}<br>{{t.name}}{%endif%}{%endfor%}";
 
     L.marker([{{l.loc}}]).bindPopup(customPopup,customOptions).addTo(map);
      {% endfor %}

@@ -32,12 +32,14 @@ def getTrends():
                             addTrend = models.TWITTER_TRENDS(name=tag['name'],
                                                              promoted_content=tag['promoted_content'],
                                                              tweet_volume=tag['tweet_volume'],
-                                                             url=tag['url'],collected=datetime.utcnow(),saved=False)
+                                                             url=tag['url'],collected=datetime.utcnow(),saved=False,
+                                                             silence=False)
                         else:
                             addTrend = models.TWITTER_TRENDS(name=tag['name'],
                                                              promoted_content=tag['promoted_content'],
                                                              tweet_volume=tag['tweet_volume'],
-                                                             url=tag['url'], collected=datetime.utcnow(), saved=True)
+                                                             url=tag['url'], collected=datetime.utcnow(), saved=True,
+                                                             silence=False)
 
                         location.trends.append(addTrend)
                         db.session.commit()

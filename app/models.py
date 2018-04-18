@@ -122,16 +122,18 @@ class TWITTER_TRENDS(db.Model):
     url = db.Column(db.String(250))
     collected = db.Column(db.DateTime)
     saved = db.Column(db.Boolean)
+    silence = db.Column(db.Boolean)
     trend_loc = db.Column(db.Integer, db.ForeignKey('TRENDS_LOC.row_id'), nullable=False)
 
 
-    def __init__(self,name, promoted_content, tweet_volume,url,collected, saved):
+    def __init__(self,name, promoted_content, tweet_volume,url,collected, saved, silence):
         self.name = name
         self.promoted_content = promoted_content
         self.tweet_volume = tweet_volume
         self.url = url
         self.collected = collected
         self.saved = saved
+        self.silence = silence
 
 class EXPORTS (db.Model):
     __tablename__ = 'EXPORTS'
