@@ -446,6 +446,7 @@ def twittertargetDetail(id):
     CRAWLLOG = models.CRAWLLOG.query.order_by(models.CRAWLLOG.event_start.desc()).filter(models.CRAWLLOG.tag_id==id).limit(100)
     EXPORTS = models.EXPORTS.query.order_by(models.EXPORTS.row_id.desc()).filter(models.EXPORTS.twitter_id==id)
     SEARCH = models.SEARCH.query.filter(models.SEARCH.username==TWITTER.title).filter(models.SEARCH.ia_uri != None ).limit(5)
+    SEARCH_SEARCH = models.SEARCH.query.filter(models.SEARCH.source==id).filter(models.SEARCH.ia_uri != None).limit(5)
     form = twitterTargetForm(prefix='form',obj=object)
     assForm = collectionAddForm(prefix="assForm")
     linkedCollections = models.TWITTER.query. \
@@ -477,7 +478,7 @@ def twittertargetDetail(id):
 
 
 
-    return render_template("twittertargetdetail.html", TWITTER=TWITTER, form=form, CRAWLLOG=CRAWLLOG, EXPORTS=EXPORTS, SEARCH = SEARCH,linkedCollections=linkedCollections, assForm=assForm, l=l, ref = request.referrer)
+    return render_template("twittertargetdetail.html", TWITTER=TWITTER, form=form, CRAWLLOG=CRAWLLOG, EXPORTS=EXPORTS, SEARCH = SEARCH, SEARCH_SEARCH=SEARCH_SEARCH,linkedCollections=linkedCollections, assForm=assForm, l=l, ref = request.referrer)
 
 '''Route to detail view of collections'''
 @app.route('/collectiondetail/<id>/<int:page>', methods=['GET', 'POST'])

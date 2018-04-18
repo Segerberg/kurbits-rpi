@@ -6,7 +6,7 @@
 
 {% block pageHeader %}
 
-{% if 'twittertrends' in ref %} <a class="btn btn-warning btn-sm pull-right" href="{{ url_for('twittertrends') }}" role="button"><i class="fa fa-arrow-left fa-fw"></i> Return to trends</a>{% endif %}
+{% if ref !=None and 'twittertrends' in ref %} <a class="btn btn-warning btn-sm pull-right" href="{{ url_for('twittertrends') }}" role="button"><i class="fa fa-arrow-left fa-fw"></i> Return to trends</a>{% endif %}
 
 {% if TWITTER.targetType == 'User' %}<a href="{{ url_for('userlist',page=1, id=TWITTER.title)}}" class="name">@{{ TWITTER.title }} </a>{%else%}<a href="{{ url_for('searchlist',page=1, id=TWITTER.row_id)}}" class="name">{{ TWITTER.title }} </a>{% endif %}
 
@@ -209,7 +209,7 @@
              </div>
          </div>
      </div>
-     {% if TWITTER.targetType == 'User' %}
+
      <div class="col-lg-12">
          <div class="panel panel-default">
              <div class="panel-heading">
@@ -223,13 +223,18 @@
                  </div>
              </div>
              <div class="panel-body">
+                 {% if TWITTER.targetType == 'User' %}
                  {% if TWITTER.ia_uri %}
                         <h5><span class="label label-default">Timeline captures</span></h5>
                 <ul class="list-unstyled">
-                    <li><b style="color:grey">Url:</b> <a target="_blank" href="https://web.archive.org/web/*/https://twitter.com/{{TWITTER.title}}">https://web.archive.org/web/*/https://twitter.com/{{TWITTER.title}} </a> </li>
+
+                    <li><b style="color:grey">Url:</b> <a target="_blank"  href="https://web.archive.org/web/*/https://twitter.com/{{TWITTER.title}}">https://web.archive.org/web/*/https://twitter.com/{{TWITTER.title}} </a> </li>
+
+
                     <li><b style="color:grey">Last Capture:</b> <a target="_blank" href="{{TWITTER.ia_uri}}"><i class="fa fa-eye fa-fw"></i> {{ TWITTER.ia_cap_date.strftime('%Y-%m-%d %H:%M') }} </a></li>
                     <li><b style="color:grey">Number Of Captures:</b> {{TWITTER.ia_cap_count}} </li>
                 </ul>
+                 {% endif %}
                  {% endif %}
                  <div class="table-responsive">
                  <table class="table table-bordered">
@@ -237,9 +242,14 @@
                      <col width="10">
                      <col width="10">
                      <col width="10">
+                     {% if TWITTER.targetType == 'Search' %}
+                      <col width="10">
+                      {% endif %}
                      <thead>
                      <h5><span class="label label-default">Tweet captures</span></h5>
-                     <tr>
+                     <tr> {% if TWITTER.targetType == 'Search' %}
+                         <th><i class="fa fa-twitter fa-fw"></i> User</th>
+                         {% endif %}
                          <th><i class="fa fa-twitter fa-fw"></i> Tweet</th>
                          <th><i class="fa fa-clock-o fa-fw"></i> Last Capture</th>
                          <th><i class="fa fa-sign-in fa-fw"></i> Captures</th>
@@ -249,10 +259,12 @@
                      </tr>
                      </thead>
                      <tbody>
-                      {% for ia in SEARCH %}
+                      {% if TWITTER.targetType == 'User' %}
+                     {% for ia in SEARCH %}
 
 
                      <tr>
+
                      <td><a target="_blank" href="{{ia.ia_uri}}">{{ia.text}}</a></td>
                          <td>{{ia.ia_cap_date.strftime('%Y-%m-%d %H:%M')}}</td>
                      <td>{{ia.ia_cap_count}}</td>
@@ -260,6 +272,22 @@
                          <td><a href="{{ url_for('IA_Push', id=ia.row_id, type='tweet')}}" class="btn btn-default btn-xs"><i class="fa fa-sign-in fa-fw"></i>Push</a></td>
                      </tr>
                      {% endfor %}
+                      {% else %}
+                      {% for ia in SEARCH_SEARCH %}
+
+
+                     <tr>
+
+                         <td>{{ia.username}}</td>
+
+                     <td><a target="_blank" href="{{ia.ia_uri}}">{{ia.text}}</a></td>
+                         <td>{{ia.ia_cap_date.strftime('%Y-%m-%d %H:%M')}}</td>
+                     <td>{{ia.ia_cap_count}}</td>
+
+                         <td><a href="{{ url_for('IA_Push', id=ia.row_id, type='tweet')}}" class="btn btn-default btn-xs"><i class="fa fa-sign-in fa-fw"></i>Push</a></td>
+                     </tr>
+                     {% endfor %}
+                     {% endif %}
                      </tbody>
                  </table>
                      <a href="{{ url_for('IA_tweets', id=TWITTER.title, page=1)}}" class="btn btn-default btn-xs"><i class="fa fa-eye fa-fw"></i>View all</a></td>
@@ -268,7 +296,7 @@
          </div>
      </div>
 
-{% endif %}
+
      <div class="col-lg-12">
          <div class="panel panel-default">
              <div class="panel-heading"><a data-toggle="collapse" href="#collapse1">
