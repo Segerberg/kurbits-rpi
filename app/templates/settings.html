@@ -170,6 +170,38 @@
         </div>
     </div>
 </div>
+<div class="col-lg-4">
+    <div class="panel panel-default">
+        <div class="panel-heading"><a data-toggle="collapse" href="#collapse8">
+            <i class="fa fa-globe fa-fw"></i> Language Codes</a>
+        </div>
+        <div id="collapse8" class="panel-collapse collapse in">
+            <div class="panel-body">
+                       <form class="form" method="post" action="{{ url_for('alterLangCode', id=1, type='add') }}" role="search">
+                    {{ langForm.hidden_tag() }}
+            <div class="input-group">
+                {{langForm.type(class="form-control",id="langcodeTypeInput",placeholder="Add language code...")}}
+
+                <span class="input-group-btn">
+                    <button class="btn btn-primary" type="submit"><i class="fa fa-plus fa-fw"></i>Add</button>
+                </span>
+            </div>
+        </form>
+                <hr>
+                <div class="list-group">
+                     {% for code in langcodes %}
+                    {% if code.term == 'all' %}
+                    {% else %}
+                    <span class="list-group-item">{{code.term}} <a href="{{ url_for('alterLangCode', id=code.row_id, type='delete') }}" class="btn btn-danger btn-xs pull-right" role="button" ><i class="fa fa-trash fa-fw"></i></a></span>
+                    {% endif %}
+                    {% endfor %}
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
 
 
 <div class="col-lg-4">

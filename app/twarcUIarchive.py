@@ -53,6 +53,8 @@ def twittercrawl(id):
         if TWITTER.targetType == "Search":
             if TWITTER.searchLang == None:
                 tweets = t.search(TWITTER.searchString, since_id=last_id)
+            elif TWITTER.searchLang == 'all':
+                tweets = t.search(TWITTER.searchString, since_id=last_id)
             else:
                 tweets = t.search(TWITTER.searchString, lang=TWITTER.searchLang, since_id=last_id)
 

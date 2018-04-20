@@ -17,8 +17,8 @@ class collectionAddForm(FlaskForm):
 class twitterTargetForm(FlaskForm):
     title = StringField(u'Title', validators=[DataRequired()])
     searchString = StringField(u'Search ')
-    searchLang = SelectField('Search Language', choices=[(None,"Not specified"),("sv","sv"),("en","en")])
-    #searchLang = [(g.id, g.name) for g in Group.query.order_by('name')]
+    #searchLang = SelectField('Search Language', choices=[(None,"Not specified"),("sv","sv"),("en","en")])
+    searchLang = SelectField(u'Search language', choices=[], coerce=str)
     creator = StringField(u'Creator')
     description = TextAreaField(u'Description')
     subject = StringField(u'Subject')
@@ -31,10 +31,7 @@ class twitterCollectionForm(FlaskForm):
     title = StringField(u'Title', validators=[DataRequired()])
     curator = StringField(u'Curator')
     description = TextAreaField(u'Description')
-
-    #collectionType = SelectField(u'Collection Type', choices=[("Not Specified", "Not Specified"),("Event", "Event"),("Subject","Subject")])
     collectionType = SelectField(u'Collection Type', choices=[], coerce=str)
-
     subject = StringField(u'Subject')
     status = SelectField(u'Status', choices=[("1", "Active"),("0","Closed")])
     inclDateStart = DateField(u'Inclusive start date',[validators.Optional()],format='%Y-%m-%d')
@@ -53,6 +50,9 @@ class stopWordsForm(FlaskForm):
     stopWord = StringField(u'Stop Word', validators=[DataRequired()])
 
 class collectionTypeForm(FlaskForm):
+    type = StringField(u'Collection Type', validators=[DataRequired()])
+
+class langCodeForm(FlaskForm):
     type = StringField(u'Collection Type', validators=[DataRequired()])
 
 SCHEDULE_CHOICES = [('604800', 'Weekly'), ('86400', 'Daily'),('43200', 'Twice a day'),

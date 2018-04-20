@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 from app import app, render_template, request,db, url_for, redirect,flash,Response,jsonify, send_from_directory
 from app import models
-from .forms import twitterTargetForm, SearchForm, twitterCollectionForm, collectionAddForm, twitterTrendForm, stopWordsForm, scheduleForm,SCHEDULE_CHOICES, passwordForm, collectionTypeForm
+from .forms import twitterTargetForm, SearchForm, twitterCollectionForm, collectionAddForm, twitterTrendForm, stopWordsForm, scheduleForm,SCHEDULE_CHOICES, passwordForm, collectionTypeForm, langCodeForm
 from sqlalchemy.exc import IntegrityError
 from .twarcUIarchive import twittercrawl
 from .twitterTrends import getTrends
@@ -284,7 +284,21 @@ def alterCollectionType(type, id):
         db.session.commit()
 
     return redirect(request.referrer)
+"""Route for altering langcode"""
+@app.route('/langcode/<type>/<id>', methods=['GET', 'POST'])
+@auth.login_required
+def alterLangCode(type, id):
+    if type == 'add':
+        langForm = langCodeForm()
+        langcode = models.VOCABS(term=langForm.type.data,use='langcode',description=None)
+        db.session.add(langcode)
+        db.session.commit()
+    else:
+        langcode = models.VOCABS.query.get_or_404(id)
+        db.session.delete(langcode)
+        db.session.commit()
 
+    return redirect(request.referrer)
 
 """Route to remove Trend from Search"""
 @app.route('/removetwittertrend/<id>', methods=['GET', 'POST'])
@@ -313,7 +327,10 @@ def twittersearchtargets(page=1):
     TWITTER = models.TWITTER.query.filter(models.TWITTER.targetType == 'Search').filter(models.TWITTER.status==1).order_by(models.TWITTER.title).paginate(page, TARGETS_PER_PAGE, False)
     templateType = "Search"
     openClosed = "Open"
+    collectionForm = twitterCollectionForm(prefix='collectionForm')
+    langChoices = [(c.term, c.term) for c in models.VOCABS.query.filter(models.VOCABS.use == 'langcode').all()]
     form = twitterTargetForm(prefix='form')
+    form.searchLang.choices = langChoices
     if request.method == 'POST'and form.validate_on_submit():
         try:
             addTarget = models.TWITTER(title=form.title.data, searchString=form.searchString.data,searchLang=form.searchLang.data, creator=form.creator.data, targetType='Search',
@@ -342,7 +359,9 @@ def twittersearchtargets(page=1):
 def twittersearchtargetsclosed(page=1):
     TWITTER = models.TWITTER.query.filter(models.TWITTER.targetType == 'Search').filter(models.TWITTER.status==0).order_by(models.TWITTER.title).paginate(page, TARGETS_PER_PAGE, False)
     templateType = "Search"
+    langChoices = [(c.term, c.term) for c in models.VOCABS.query.filter(models.VOCABS.use == 'langcode').all()]
     form = twitterTargetForm(prefix='form')
+    form.searchLang.choices = langChoices
     if request.method == 'POST'and form.validate_on_submit():
         try:
             addTarget = models.TWITTER(title=form.title.data, searchString=form.searchString.data, searchLang=form.searchLang.data, creator=form.creator.data, targetType='Search',
@@ -480,7 +499,9 @@ def twittertargetDetail(id):
     EXPORTS = models.EXPORTS.query.order_by(models.EXPORTS.row_id.desc()).filter(models.EXPORTS.twitter_id==id)
     SEARCH = models.SEARCH.query.filter(models.SEARCH.username==TWITTER.title).filter(models.SEARCH.ia_uri != None ).limit(5)
     SEARCH_SEARCH = models.SEARCH.query.filter(models.SEARCH.source==id).filter(models.SEARCH.ia_uri != None).limit(5)
-    form = twitterTargetForm(prefix='form',obj=object)
+    langChoices = [(c.term, c.term) for c in models.VOCABS.query.filter(models.VOCABS.use == 'langcode').all()]
+    form = twitterTargetForm(prefix='form', obj=object)
+    form.searchLang.choices = langChoices
     assForm = collectionAddForm(prefix="assForm")
     linkedCollections = models.TWITTER.query. \
         filter(models.TWITTER.row_id == id). \
@@ -529,6 +550,8 @@ def collectionDetail(id, page=1):
     collectionForm.collectionType.choices = choices
     targetForm = twitterTargetForm(prefix='targetform')
     searchApiForm = twitterTargetForm(prefix='searchapiform')
+    langChoices = [(c.term, c.term) for c in models.VOCABS.query.filter(models.VOCABS.use == 'langcode').all()]
+    searchApiForm.searchLang.choices = langChoices
     schedForm = scheduleForm(prefix="schedForm")
 
     if request.method == 'POST' and schedForm.validate_on_submit():
@@ -920,9 +943,10 @@ def settings():
     stopForm = stopWordsForm()
     passForm = passwordForm()
     typeForm = collectionTypeForm()
+    langForm = langCodeForm()
     silencedTrends = models.TWITTER_TRENDS.query.filter(models.TWITTER_TRENDS.silence == True).order_by(models.TWITTER_TRENDS.name.asc()).all()
     collectionTypes = models.VOCABS.query.filter(models.VOCABS.use=='collectionType').order_by(models.VOCABS.term.asc()).all()
-
+    langcodes = models.VOCABS.query.filter(models.VOCABS.use == 'langcode').order_by(models.VOCABS.term.asc()).all()
     if request.method == 'POST' and passForm.validate_on_submit():
         #TWITTER = models.TWITTER.query.filter(models.TWITTER.row_id == id).first()
         USERS = models.USERS.query.filter(models.USERS.row_id == 1).first()
@@ -949,7 +973,7 @@ def settings():
     #REDIS
     workers = Worker.all(connection=Redis())
 
-    return render_template("settings.html", collectionTypes = collectionTypes ,stopWords = stopWords, stopForm = stopForm, passForm = passForm, diskList=diskList, workers=workers,qlen=len(q),intqlen=len(eq), silencedTrends = silencedTrends, typeForm=typeForm)
+    return render_template("settings.html", collectionTypes = collectionTypes ,stopWords = stopWords, stopForm = stopForm, passForm = passForm, diskList=diskList, workers=workers,qlen=len(q),intqlen=len(eq), silencedTrends = silencedTrends, typeForm=typeForm,langForm=langForm,langcodes=langcodes)
 
 
 '''Route to remove stop word'''
