@@ -217,9 +217,11 @@ class VOCABS(db.Model):
     __tablename__ = 'VOCABS'
     row_id = db.Column(db.Integer, primary_key=True)
     term = db.Column(db.String(250))
+    description = db.Column(db.String(250))
     use = db.Column(db.String(50))
-    def __init__(self,term, use):
+    def __init__(self,term,description ,use):
         self.term = term
+        self.description = description
         self.use = use
 
 class USERS(db.Model):

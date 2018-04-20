@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 from app import app, render_template, request,db, url_for, redirect,flash,Response,jsonify, send_from_directory
 from app import models
-from .forms import twitterTargetForm, SearchForm, twitterCollectionForm, collectionAddForm, twitterTrendForm, stopWordsForm, scheduleForm,SCHEDULE_CHOICES, passwordForm
+from .forms import twitterTargetForm, SearchForm, twitterCollectionForm, collectionAddForm, twitterTrendForm, stopWordsForm, scheduleForm,SCHEDULE_CHOICES, passwordForm, collectionTypeForm
 from sqlalchemy.exc import IntegrityError
 from .twarcUIarchive import twittercrawl
 from .twitterTrends import getTrends
@@ -269,6 +269,23 @@ def silenceTrend(id):
 
     return redirect(request.referrer)
 
+"""Route for altering collection types"""
+@app.route('/collectionstype/<type>/<id>', methods=['GET', 'POST'])
+@auth.login_required
+def alterCollectionType(type, id):
+    if type == 'add':
+        typeForm = collectionTypeForm()
+        type = models.VOCABS(term=typeForm.type.data,use='collectionType',description=None)
+        db.session.add(type)
+        db.session.commit()
+    else:
+        type = models.VOCABS.query.get_or_404(id)
+        db.session.delete(type)
+        db.session.commit()
+
+    return redirect(request.referrer)
+
+
 """Route to remove Trend from Search"""
 @app.route('/removetwittertrend/<id>', methods=['GET', 'POST'])
 @auth.login_required
@@ -352,8 +369,9 @@ def twittersearchtargetsclosed(page=1):
 @auth.login_required
 def collections(page=1):
     COLLECTIONS = models.COLLECTION.query.filter(models.COLLECTION.status == '1').order_by(models.COLLECTION.title).paginate(page, TARGETS_PER_PAGE, False)
-
+    choices = [(c.term, c.term) for c in models.VOCABS.query.filter(models.VOCABS.use == 'collectionType').all()]
     collectionForm = twitterCollectionForm(prefix='collectionForm')
+    collectionForm.collectionType.choices = choices
     if request.method == 'POST' and collectionForm.validate_on_submit():
         try:
             addTarget = models.COLLECTION(title=collectionForm.title.data, curator=collectionForm.curator.data,
@@ -505,9 +523,10 @@ def collectionDetail(id, page=1):
     #CRAWLLOG = models.CRAWLLOG.query.order_by(models.CRAWLLOG.row_id.desc()).filter(models.CRAWLLOG.tag_id==id)
     #TWITTER = models.TWITTER.query.filter(models.TWITTER.status == '1').filter(models.TWITTER.targetType == 'User').order_by(models.TWITTER.title).paginate(page, TARGETS_PER_PAGE, False)
     linkedTargets =  models.COLLECTION.query.filter(models.COLLECTION.row_id==id).first().tags.paginate(page, POSTS_PER_PAGE, False)
-
+    choices = [(c.term, c.term) for c in models.VOCABS.query.filter(models.VOCABS.use == 'collectionType').all()]
 
     collectionForm = twitterCollectionForm(prefix='collectionform',obj=object)
+    collectionForm.collectionType.choices = choices
     targetForm = twitterTargetForm(prefix='targetform')
     searchApiForm = twitterTargetForm(prefix='searchapiform')
     schedForm = scheduleForm(prefix="schedForm")
@@ -900,7 +919,9 @@ def settings():
     stopWords = models.STOPWORDS.query.all()
     stopForm = stopWordsForm()
     passForm = passwordForm()
+    typeForm = collectionTypeForm()
     silencedTrends = models.TWITTER_TRENDS.query.filter(models.TWITTER_TRENDS.silence == True).order_by(models.TWITTER_TRENDS.name.asc()).all()
+    collectionTypes = models.VOCABS.query.filter(models.VOCABS.use=='collectionType').order_by(models.VOCABS.term.asc()).all()
 
     if request.method == 'POST' and passForm.validate_on_submit():
         #TWITTER = models.TWITTER.query.filter(models.TWITTER.row_id == id).first()
@@ -928,7 +949,7 @@ def settings():
     #REDIS
     workers = Worker.all(connection=Redis())
 
-    return render_template("settings.html", stopWords = stopWords, stopForm = stopForm, passForm = passForm, diskList=diskList, workers=workers,qlen=len(q),intqlen=len(eq), silencedTrends = silencedTrends)
+    return render_template("settings.html", collectionTypes = collectionTypes ,stopWords = stopWords, stopForm = stopForm, passForm = passForm, diskList=diskList, workers=workers,qlen=len(q),intqlen=len(eq), silencedTrends = silencedTrends, typeForm=typeForm)
 
 
 '''Route to remove stop word'''

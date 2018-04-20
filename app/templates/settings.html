@@ -128,16 +128,49 @@
         <div id="collapse6" class="panel-collapse collapse in">
             <div class="panel-body">
                 <div class="list-group">
-                    {% for trend in silencedTrends %}
+                     {% for trend in silencedTrends %}
                     <span class="list-group-item">{{trend.name}} <a href="{{ url_for('silenceTrend', id=trend.row_id) }}" class="btn btn-success btn-xs pull-right" role="button" ><i class="fa fa-eye fa-fw"></i></a></span>
 
                     {% endfor %}
+
                 </div>
 
             </div>
         </div>
     </div>
 </div>
+
+<div class="col-lg-4">
+    <div class="panel panel-default">
+        <div class="panel-heading"><a data-toggle="collapse" href="#collapse7">
+            <i class="fa fa-archive fa-fw"></i> Collection Types</a>
+        </div>
+        <div id="collapse7" class="panel-collapse collapse in">
+            <div class="panel-body">
+                       <form class="form" method="post" action="{{ url_for('alterCollectionType', id=1, type='add') }}" role="search">
+                    {{ typeForm.hidden_tag() }}
+            <div class="input-group">
+                {{typeForm.type(class="form-control",id="collectionTypeInput",placeholder="Add type...")}}
+
+                <span class="input-group-btn">
+                    <button class="btn btn-primary" type="submit"><i class="fa fa-plus fa-fw"></i>Add</button>
+                </span>
+            </div>
+        </form>
+                <hr>
+                <div class="list-group">
+                     {% for type in collectionTypes %}
+                    <span class="list-group-item">{{type.term}} <a href="{{ url_for('alterCollectionType', id=type.row_id, type='delete') }}" class="btn btn-danger btn-xs pull-right" role="button" ><i class="fa fa-trash fa-fw"></i></a></span>
+
+                    {% endfor %}
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
 
 <div class="col-lg-4">
 <div class="panel panel-default">
