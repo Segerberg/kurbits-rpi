@@ -125,7 +125,7 @@ def twittertargets(page=1):
         try:
 
 
-            addTarget = models.TWITTER(title=form.title.data, searchString='', creator=form.creator.data, targetType='User',
+            addTarget = models.TWITTER(title=form.title.data, searchString='', searchLang=None,creator=form.creator.data, targetType='User',
                                        description=form.description.data, subject=form.subject.data, status=form.status.data,lastCrawl=None, totalTweets=0,
                                        added=datetime.now(), woeid=None, index=form.index.data, schedule=None, scheduleInterval=None, scheduleText = None,
                                        ia_uri=None, ia_cap_count=0, ia_cap_date=None)
@@ -155,7 +155,7 @@ def twittertargetsclosed(page=1):
         try:
 
 
-            addTarget = models.TWITTER(title=form.title.data, searchString='', creator=form.creator.data, targetType='User',
+            addTarget = models.TWITTER(title=form.title.data, searchString='',searchLang=None, creator=form.creator.data, targetType='User',
                                        description=form.description.data, subject=form.subject.data, status=form.status.data,lastCrawl=None, totalTweets=0,
                                        added=datetime.now(), woeid=None, index=form.index.data, schedule=None, scheduleInterval=None, scheduleText = None,
                                        ia_uri=None,ia_cap_count=0, ia_cap_date=None)
@@ -210,7 +210,7 @@ def twittertrends():
 def addtwittertrend(id):
     trendAll = models.TWITTER_TRENDS.query.all()
     if request.method == 'POST':
-        addTarget = models.TWITTER(title=id, searchString=id,
+        addTarget = models.TWITTER(title=id, searchString=id, searchLang=None,
                                    creator='', targetType='Search',
                                    description='[Added from trends]', subject='',
                                    status='1', lastCrawl=None, totalTweets=0,
@@ -299,7 +299,7 @@ def twittersearchtargets(page=1):
     form = twitterTargetForm(prefix='form')
     if request.method == 'POST'and form.validate_on_submit():
         try:
-            addTarget = models.TWITTER(title=form.title.data, searchString=form.searchString.data, creator=form.creator.data, targetType='Search',
+            addTarget = models.TWITTER(title=form.title.data, searchString=form.searchString.data,searchLang=form.searchLang.data, creator=form.creator.data, targetType='Search',
                                        description=form.description.data, subject=form.subject.data,
                                        status=form.status.data, lastCrawl=None, totalTweets=0,
                                        added=datetime.now(), woeid=None, index=form.index.data,
@@ -328,7 +328,7 @@ def twittersearchtargetsclosed(page=1):
     form = twitterTargetForm(prefix='form')
     if request.method == 'POST'and form.validate_on_submit():
         try:
-            addTarget = models.TWITTER(title=form.title.data, searchString=form.searchString.data, creator=form.creator.data, targetType='Search',
+            addTarget = models.TWITTER(title=form.title.data, searchString=form.searchString.data, searchLang=form.searchLang.data, creator=form.creator.data, targetType='Search',
                                        description=form.description.data, subject=form.subject.data,
                                        status=form.status.data, lastCrawl=None, totalTweets=0,
                                        added=datetime.now(), woeid=None, index=form.index.data, schedule=None, scheduleInterval=None, scheduleText = None,
@@ -391,7 +391,7 @@ def userlist(id,page=1):
     form = twitterTargetForm(prefix='form')
     if request.method == 'POST' and form.validate_on_submit():
         try:
-            addTarget = models.TWITTER(title=form.title.data,searchString='' ,creator=form.creator.data, targetType='User',
+            addTarget = models.TWITTER(title=form.title.data,searchString='', searchLang=None,creator=form.creator.data, targetType='User',
                                        description=form.description.data, subject=form.subject.data,
                                        status=form.status.data, lastCrawl=None, totalTweets=0,
                                        added=datetime.now(), woeid=None, index=form.index.data, schedule=None, scheduleInterval=None , scheduleText = None,
@@ -432,7 +432,7 @@ def searchlist(id, page=1):
     form = twitterTargetForm(prefix='form')
     if request.method == 'POST' and form.validate_on_submit():
         try:
-            addTarget = models.TWITTER(title=form.title.data,searchString='' ,creator=form.creator.data, targetType='User',
+            addTarget = models.TWITTER(title=form.title.data,searchString='',searchLang=None ,creator=form.creator.data, targetType='User',
                                        description=form.description.data, subject=form.subject.data,
                                        status=form.status.data, lastCrawl=None, totalTweets=0,
                                        added=datetime.now(), woeid=None, index=form.index.data, schedule=None, scheduleInterval=None , scheduleText = None,
@@ -548,7 +548,7 @@ def collectionDetail(id, page=1):
 
     if request.method == 'POST' and targetForm.validate_on_submit():
         try:
-            addTarget = models.TWITTER(title=targetForm.title.data, searchString='', creator=targetForm.creator.data,
+            addTarget = models.TWITTER(title=targetForm.title.data, searchString='', searchLang=None, creator=targetForm.creator.data,
                                        targetType='User',
                                        description=targetForm.description.data, subject=targetForm.subject.data,
                                        status=targetForm.status.data, lastCrawl=None, totalTweets=0,
@@ -570,7 +570,7 @@ def collectionDetail(id, page=1):
 
     if request.method == 'POST' and searchApiForm.validate_on_submit():
         try:
-            addTarget = models.TWITTER(title=searchApiForm.title.data, searchString=searchApiForm.searchString.data,
+            addTarget = models.TWITTER(title=searchApiForm.title.data, searchString=searchApiForm.searchString.data,searchLang=searchApiForm.searchLang.data,
                                        creator=searchApiForm.creator.data,
                                        targetType='Search',
                                        description=searchApiForm.description.data, subject=searchApiForm.subject.data,

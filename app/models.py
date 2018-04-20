@@ -12,6 +12,7 @@ class TWITTER(db.Model):
     row_id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(50), unique=True, nullable=False, index=True)
     searchString = db.Column(db.String(250), nullable=False)
+    searchLang = db.Column(db.String(10))
     creator = db.Column(db.String(50))
     targetType = db.Column(db.String(50))
     description = db.Column(db.Text)
@@ -35,7 +36,7 @@ class TWITTER(db.Model):
 
 
 
-    def __init__(self, title, searchString, creator,
+    def __init__(self, title, searchString, searchLang, creator,
                  targetType, description, subject,
                  status, lastCrawl, totalTweets,
                  added, woeid, index,
@@ -43,6 +44,7 @@ class TWITTER(db.Model):
                  ia_uri,ia_cap_count, ia_cap_date):
         self.title = title
         self.searchString = searchString
+        self.searchLang = searchLang
         self.creator = creator
         self.targetType = targetType
         self.description = description

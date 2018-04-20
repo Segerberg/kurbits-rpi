@@ -44,6 +44,7 @@
                     {% else %}
                     <li><b style="color:grey"> Title:</b> {{ TWITTER.title }}</li>
                     <li><b style="color:grey"> Search String:</b> {{ TWITTER.searchString }}</li>
+                    <li><b style="color:grey"> Search Language:</b> {{ TWITTER.searchLang }}</li>
                     <li><b style="color:grey"> Keywords:</b> {{ TWITTER.subject }}</li>
                     <li><b style="color:grey"> Description</b> {{ TWITTER.description }}</li>
                     <li><b style="color:grey">Status</b> {% if TWITTER.status == '1' %} Active {% else %} Closed {% endif %}</li>
@@ -97,6 +98,10 @@
                                     <label for="searchString" data-toggle="popover" title="searchString" data-placement="left" data-content="TBD">Search String</label>
                                     {{form.searchString(class="form-control", id="searchString")}}
                                 </div>
+                                 <div class="form-group">
+                    <label for="searchLang" data-toggle="popover" title="searchLang" data-placement="left" data-content="TBD">Search Language</label>
+                    {{form.searchLang(class="form-control", id="searchLang")}}
+                </div>
                                 {% endif %}
                                 {% if TWITTER.targetType == 'User' %}
                                 <div class="form-group">

@@ -17,6 +17,7 @@ class collectionAddForm(FlaskForm):
 class twitterTargetForm(FlaskForm):
     title = StringField(u'Title', validators=[DataRequired()])
     searchString = StringField(u'Search ')
+    searchLang = SelectField('Search Language', choices=[(None,"Not specified"),("sv","sv"),("en","en")])
     creator = StringField(u'Creator')
     description = TextAreaField(u'Description')
     subject = StringField(u'Subject')
