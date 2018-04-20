@@ -130,11 +130,13 @@
                     <script src="{{ url_for('static', filename = 'js/raphael-2.1.4.min.js') }}"></script>
                     <script  src="{{ url_for('static', filename = 'js/jquery.tablesorter.min.js') }}"></script>
 
+
+
                     {% block content %}
 
 
                     {% endblock %}
-
+                    <script  src="{{ url_for('static', filename = 'dist/js/save_panel_state.js') }}"></script>
                 </div>
             </div>
         </div>
@@ -150,5 +152,6 @@
         }
 setInterval(update_values, 3000)
                     </script>
+
 </body>
 </html>
