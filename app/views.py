@@ -328,7 +328,7 @@ def twittersearchtargets(page=1):
     templateType = "Search"
     openClosed = "Open"
     collectionForm = twitterCollectionForm(prefix='collectionForm')
-    langChoices = [(c.term, c.term) for c in models.VOCABS.query.filter(models.VOCABS.use == 'langcode').all()]
+    langChoices = [(c.term, c.term) for c in models.VOCABS.query.filter(models.VOCABS.use == 'langcode').order_by(models.VOCABS.term.asc()).all()]
     form = twitterTargetForm(prefix='form')
     form.searchLang.choices = langChoices
     if request.method == 'POST'and form.validate_on_submit():
@@ -359,7 +359,7 @@ def twittersearchtargets(page=1):
 def twittersearchtargetsclosed(page=1):
     TWITTER = models.TWITTER.query.filter(models.TWITTER.targetType == 'Search').filter(models.TWITTER.status==0).order_by(models.TWITTER.title).paginate(page, TARGETS_PER_PAGE, False)
     templateType = "Search"
-    langChoices = [(c.term, c.term) for c in models.VOCABS.query.filter(models.VOCABS.use == 'langcode').all()]
+    langChoices = [(c.term, c.term) for c in models.VOCABS.query.filter(models.VOCABS.use == 'langcode').order_by(models.VOCABS.term.asc()).all()]
     form = twitterTargetForm(prefix='form')
     form.searchLang.choices = langChoices
     if request.method == 'POST'and form.validate_on_submit():
@@ -499,7 +499,7 @@ def twittertargetDetail(id):
     EXPORTS = models.EXPORTS.query.order_by(models.EXPORTS.row_id.desc()).filter(models.EXPORTS.twitter_id==id)
     SEARCH = models.SEARCH.query.filter(models.SEARCH.username==TWITTER.title).filter(models.SEARCH.ia_uri != None ).limit(5)
     SEARCH_SEARCH = models.SEARCH.query.filter(models.SEARCH.source==id).filter(models.SEARCH.ia_uri != None).limit(5)
-    langChoices = [(c.term, c.term) for c in models.VOCABS.query.filter(models.VOCABS.use == 'langcode').all()]
+    langChoices = [(c.term, c.term) for c in models.VOCABS.query.filter(models.VOCABS.use == 'langcode').order_by(models.VOCABS.term.asc()).all()]
     form = twitterTargetForm(prefix='form', obj=object)
     form.searchLang.choices = langChoices
     assForm = collectionAddForm(prefix="assForm")
@@ -550,7 +550,7 @@ def collectionDetail(id, page=1):
     collectionForm.collectionType.choices = choices
     targetForm = twitterTargetForm(prefix='targetform')
     searchApiForm = twitterTargetForm(prefix='searchapiform')
-    langChoices = [(c.term, c.term) for c in models.VOCABS.query.filter(models.VOCABS.use == 'langcode').all()]
+    langChoices = [(c.term, c.term) for c in models.VOCABS.query.filter(models.VOCABS.use == 'langcode').order_by(models.VOCABS.term.asc()).all()]
     searchApiForm.searchLang.choices = langChoices
     schedForm = scheduleForm(prefix="schedForm")
 
