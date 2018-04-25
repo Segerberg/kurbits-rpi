@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 from app import app, render_template, request,db, url_for, redirect,flash,Response,jsonify, send_from_directory
 from app import models
-from .forms import twitterTargetForm, SearchForm, twitterCollectionForm, collectionAddForm, twitterTrendForm, stopWordsForm, scheduleForm,SCHEDULE_CHOICES, passwordForm, collectionTypeForm, langCodeForm
+from .forms import twitterTargetForm, twitterTargetUserForm, SearchForm, twitterCollectionForm, collectionAddForm, twitterTrendForm, stopWordsForm, scheduleForm,SCHEDULE_CHOICES, passwordForm, collectionTypeForm, langCodeForm, networkForm
 from sqlalchemy.exc import IntegrityError
 from .twarcUIarchive import twittercrawl
 from .twitterTrends import getTrends
@@ -13,6 +13,7 @@ from .dehydrate import dehydrateUserSearch,dehydrateCollection
 from .wordcloud import wordCloud, wordCloudCollection
 from .urls import urlsUserSearch, urlsCollection
 from .tweets2csv import csvUserSearch, csvCollection
+from.network import networkUserSearch
 from .scheduleCollection import startScheduleCollectionCrawl
 from .IA_save import push, pushAccount
 from config import POSTS_PER_PAGE, REDIS_DB, MAP_VIEW,MAP_ZOOM,TARGETS_PER_PAGE,EXPORTS_BASEDIR,ARCHIVE_BASEDIR, TREND_UPDATE
@@ -118,7 +119,7 @@ TWITTER
 @auth.login_required
 def twittertargets(page=1):
     TWITTER = models.TWITTER.query.filter(models.TWITTER.targetType=='User').filter(models.TWITTER.status==1).order_by(models.TWITTER.title).paginate(page, TARGETS_PER_PAGE,False)
-    form = twitterTargetForm(prefix='form')
+    form = twitterTargetUserForm(prefix='form')
 
     if request.method == 'POST'and form.validate_on_submit():
 
@@ -148,7 +149,7 @@ def twittertargets(page=1):
 @auth.login_required
 def twittertargetsclosed(page=1):
     TWITTER = models.TWITTER.query.filter(models.TWITTER.targetType=='User').filter(models.TWITTER.status==0).order_by(models.TWITTER.title).paginate(page, TARGETS_PER_PAGE,False)
-    form = twitterTargetForm(prefix='form')
+    form = twitterTargetUserForm(prefix='form')
 
     if request.method == 'POST'and form.validate_on_submit():
 
@@ -425,8 +426,9 @@ def userlist(id,page=1):
     print (id)
     results = models.SEARCH.query.filter(models.SEARCH.username==id).order_by(models.SEARCH.created_at.desc()).paginate(page, POSTS_PER_PAGE, False)
     twitterTarget = models.TWITTER.query.filter(models.TWITTER.title == id).first()
-    form = twitterTargetForm(prefix='form')
+    form = twitterTargetUserForm(prefix='form')
     if request.method == 'POST' and form.validate_on_submit():
+
         try:
             addTarget = models.TWITTER(title=form.title.data,searchString='', searchLang=None,creator=form.creator.data, targetType='User',
                                        description=form.description.data, subject=form.subject.data,
@@ -503,6 +505,7 @@ def twittertargetDetail(id):
     form = twitterTargetForm(prefix='form', obj=object)
     form.searchLang.choices = langChoices
     assForm = collectionAddForm(prefix="assForm")
+    netForm = networkForm(prefix="netForm")
     linkedCollections = models.TWITTER.query. \
         filter(models.TWITTER.row_id == id). \
         first(). \
@@ -513,6 +516,25 @@ def twittertargetDetail(id):
     if request.method == 'POST' and assForm.validate_on_submit():
         object.tags.append(assForm.assoc.data)
         db.session.commit()
+        return redirect(url_for('twittertargetDetail', id=id))
+
+    if request.method == 'POST' and netForm.validate_on_submit():
+        if netForm.min_subgraph_size.data:
+            min_subgraph = netForm.min_subgraph_size.data
+        else:
+            min_subgraph = False
+
+        if netForm.max_subgraph_size.data:
+            max_subgraph = netForm.max_subgraph_size.data
+        else:
+            max_subgraph = False
+
+
+
+        eq.enqueue(networkUserSearch, id=id, users=netForm.users.data,retweets=netForm.retweets.data, output=netForm.output.data,min_subgraph_size=min_subgraph, max_subgraph_size=max_subgraph , timeout=3000)
+
+
+        flash(u'Exporting network, please refresh page!', 'success')
         return redirect(url_for('twittertargetDetail', id=id))
 
 
@@ -532,7 +554,7 @@ def twittertargetDetail(id):
 
 
 
-    return render_template("twittertargetdetail.html", TWITTER=TWITTER, form=form, CRAWLLOG=CRAWLLOG, EXPORTS=EXPORTS, SEARCH = SEARCH, SEARCH_SEARCH=SEARCH_SEARCH,linkedCollections=linkedCollections, assForm=assForm, l=l, ref = request.referrer)
+    return render_template("twittertargetdetail.html", TWITTER=TWITTER, form=form, netForm=netForm, CRAWLLOG=CRAWLLOG, EXPORTS=EXPORTS, SEARCH = SEARCH, SEARCH_SEARCH=SEARCH_SEARCH,linkedCollections=linkedCollections, assForm=assForm, l=l, ref = request.referrer)
 
 '''Route to detail view of collections'''
 @app.route('/collectiondetail/<id>/<int:page>', methods=['GET', 'POST'])
@@ -548,7 +570,7 @@ def collectionDetail(id, page=1):
 
     collectionForm = twitterCollectionForm(prefix='collectionform',obj=object)
     collectionForm.collectionType.choices = choices
-    targetForm = twitterTargetForm(prefix='targetform')
+    targetForm = twitterTargetUserForm(prefix='targetform')
     searchApiForm = twitterTargetForm(prefix='searchapiform')
     langChoices = [(c.term, c.term) for c in models.VOCABS.query.filter(models.VOCABS.use == 'langcode').order_by(models.VOCABS.term.asc()).all()]
     searchApiForm.searchLang.choices = langChoices

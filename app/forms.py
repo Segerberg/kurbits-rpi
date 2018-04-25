@@ -1,8 +1,8 @@
 from flask_wtf import FlaskForm
 from app import models, db
-from wtforms import StringField, BooleanField, SelectField, RadioField , FieldList, FormField, TextAreaField, SelectMultipleField, widgets,validators, PasswordField
+from wtforms import StringField, BooleanField, SelectField, RadioField , FieldList, FormField, TextAreaField, SelectMultipleField, widgets,validators, PasswordField, IntegerField
 from wtforms.fields.html5 import DateField
-from wtforms.validators import DataRequired,Regexp
+from wtforms.validators import DataRequired,Regexp, Optional
 from wtforms.ext.sqlalchemy.fields import QuerySelectField
 from wtforms.ext.sqlalchemy.fields import QuerySelectMultipleField
 
@@ -17,7 +17,6 @@ class collectionAddForm(FlaskForm):
 class twitterTargetForm(FlaskForm):
     title = StringField(u'Title', validators=[DataRequired()])
     searchString = StringField(u'Search ')
-    #searchLang = SelectField('Search Language', choices=[(None,"Not specified"),("sv","sv"),("en","en")])
     searchLang = SelectField(u'Search language', choices=[], coerce=str)
     creator = StringField(u'Creator')
     description = TextAreaField(u'Description')
@@ -25,7 +24,21 @@ class twitterTargetForm(FlaskForm):
     status = SelectField(u'Status', choices=[("1", "Active"),("0","Closed")])
     index = BooleanField(u'Index')
 
+class twitterTargetUserForm(FlaskForm):
+    title = StringField(u'Title', validators=[DataRequired()])
+    searchString = StringField(u'Search ')
+    creator = StringField(u'Creator')
+    description = TextAreaField(u'Description')
+    subject = StringField(u'Subject')
+    status = SelectField(u'Status', choices=[("1", "Active"),("0","Closed")])
+    index = BooleanField(u'Index')
 
+class networkForm(FlaskForm):
+    users = BooleanField(u'Users')
+    retweets = BooleanField(u'Retweets')
+    min_subgraph_size = IntegerField(u'min subgraph size',validators=[Optional()])
+    max_subgraph_size = IntegerField(u'max subgraph size',validators=[Optional()])
+    output = SelectField(u'Status', choices=[("gexf", "GEXF"),("html","HTML"),("json","JSON")])
 
 class twitterCollectionForm(FlaskForm):
     title = StringField(u'Title', validators=[DataRequired()])
