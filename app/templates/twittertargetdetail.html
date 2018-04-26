@@ -78,7 +78,7 @@
                 </div>
                 {% endif %}
 
-                            <!-- Modal -->
+                <!-- Search_Modal -->
                 <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
                     <div class="modal-dialog">
                         <div class="modal-content">
@@ -88,12 +88,13 @@
                             </div>
                             <div class="modal-body">
                                 <div class="form-group">
+                                     {% if TWITTER.targetType == 'Search' %}
                                     <form action="" method="post" name="auth_name">
                                         {{ form.hidden_tag() }}
                                         <label for="title"data-toggle="popover" title="Title" data-placement="left" data-content="TBD">Title</label>
                                         {{form.title(class="form-control",id="title")}}
                                 </div>
-                                {% if TWITTER.targetType == 'Search' %}
+
                                 <div class="form-group">
                                     <label for="searchString" data-toggle="popover" title="searchString" data-placement="left" data-content="TBD">Search String</label>
                                     {{form.searchString(class="form-control", id="searchString")}}
@@ -102,13 +103,8 @@
                     <label for="searchLang" data-toggle="popover" title="searchLang" data-placement="left" data-content="TBD">Search Language</label>
                     {{form.searchLang(class="form-control", id="searchLang")}}
                 </div>
-                                {% endif %}
-                                {% if TWITTER.targetType == 'User' %}
-                                <div class="form-group">
-                                    <label for="tagcreator" data-toggle="popover" title="tagcreator" data-placement="left" data-content="TBD">Creator</label>
-                                    {{form.creator(class="form-control", id="tagcrator")}}
-                                </div>
-                                {% endif %}
+
+
                                 <div class="form-group">
                                     <label for="description" data-toggle="popover" title="Description" data-placement="left" data-content="TBD">Description</label>
                                     {{form.description(class="form-control", id="description")}}
@@ -131,8 +127,46 @@
                                 <input class="btn btn-default" type="submit" value="Spara">
                             </div>
                         </div>
+                            </form>{% else %}
+                                          <form action="" method="post" name="auth_name">
+                                        {{ userForm.hidden_tag() }}
+                                        <label for="title"data-toggle="popover" title="Title" data-placement="left" data-content="TBD">Title</label>
+                                        {{userForm.title(class="form-control",id="title")}}
+                                </div>
+
+
+                                <div class="form-group">
+                                    <label for="tagcreator" data-toggle="popover" title="tagcreator" data-placement="left" data-content="TBD">Creator</label>
+                                    {{userForm.creator(class="form-control", id="tagcrator")}}
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="description" data-toggle="popover" title="Description" data-placement="left" data-content="TBD">Description</label>
+                                    {{userForm.description(class="form-control", id="description")}}
+                                </div>
+                                <div class="form-group">
+                                    <label for="subject" data-toggle="popover" title="Subject" data-placement="left" data-content="TBD">Keywords</label>
+                                    {{userForm.subject(class="form-control", id="subject")}}
+                                </div>
+                                <div class="form-group">
+                                    <label for="status" data-toggle="popover" title="Status" data-placement="left" data-content="TBD">Status</label>
+                                    {{userForm.status(class="form-control", id="status")}}
+                                </div>
+                                <div class="form-group pull-left">
+                                    <label for="index" data-toggle="popover" title="index" data-placement="left" data-content="TBD">Index</label>
+                                    {{userForm.index(class="form-control", id="index")}}
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                                <input class="btn btn-default" type="submit" value="Spara">
+                            </div>
+                        </div>
                             </form>
+            {% endif %}
                     </div>
+
+
                 </div>
             </div>
         </div>
@@ -175,7 +209,7 @@
                          <li><a href="{{ url_for('urls', id=TWITTER.row_id) }}"><i class="fa fa-cloud fa-fw"></i> Urls</a></li>
                          <li><a href="{{ url_for('t_csv', id=TWITTER.row_id) }}"><i class="fa fa-file fa-fw"></i> CSV</a></li>
                          <li><a href="{{ url_for('joblog', id=TWITTER.row_id, filename='archive.log') }}"><i class="fa fa-list fa-fw"></i> Archive log</a></li>
-
+                         <li><a data-toggle="modal" href="#networkModal" data-target="#networkModal"><i class="fa fa-sitemap fa-fw"></i> Network</a></li>
                      </ul>
                  </div>
              </div>
@@ -219,6 +253,7 @@
          <div class="panel panel-default">
              <div class="panel-heading">
                  <i class="fa fa-university fa-fw"></i> Internet Archive
+                 {% if TWITTER.targetType == 'User' %}
                  <div class="btn-group pull-right">
                      <button type="button" class="btn btn-primary btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Actions <span class="caret"></span></button>
                      <ul class="dropdown-menu">
@@ -226,6 +261,7 @@
                         <li><a href="{{ url_for('IA_Push', type='timeline',id=TWITTER.row_id) }}"><i class="fa fa-sign-in fa-fw"></i> Push Timline</a></li>
                      </ul>
                  </div>
+                 {% endif %}
              </div>
              <div class="panel-body">
                  {% if TWITTER.targetType == 'User' %}
@@ -334,6 +370,47 @@
          </div>
      </div>
  </div>
+<h5><div class="modal fade" id="networkModal" tabindex="-1" role="dialog" aria-labelledby="networkModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="networkModalLabel"><i class="fa fa-sitemap" aria-hidden="true"></i> Network Export</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <form action="" method="post" name="auth_name">
+                        {{ netForm.hidden_tag() }}
+                        <label for="title"data-toggle="popover" title="Geolocation" data-placement="left" >Export Type</label>
+                        {{netForm.output(class="form-control",id="output")}}
+                </div>
+                <div class="form-group">
+                                    <label for="description" data-toggle="popover" title="Description" data-placement="left" data-content="TBD">Show user relations instead of tweet relations</label>
+                                    {{netForm.users(class="form-control", id="description")}}
+                                </div>
+                <div class="form-group">
+                                    <label for="description" data-toggle="popover" title="Description" data-placement="left" data-content="TBD">Include retweets</label>
+                                    {{netForm.retweets(class="form-control", id="description")}}
+                                </div>
+                <div class="form-group">
+                                    <label for="description" data-toggle="popover" title="Description" data-placement="left" data-content="TBD">Remove any subgraphs with a size smaller than this number</label>
+                                    {{netForm.min_subgraph_size(class="form-control", id="description")}}
+                                </div>
+                <div class="form-group">
+                                    <label for="description" data-toggle="popover" title="Description" data-placement="left" data-content="TBD">Remove any subgraphs with a size larger than this number</label>
+                                    {{netForm.max_subgraph_size(class="form-control", id="description")}}
+                                </div>
+
+                <hr>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                <input class="btn btn-default" type="submit" value="Export">
+            </div>
+        </div>
+        </form>
+    </div>
+</div></h5>
 <script>
  $(function () {
   $('[data-toggle="tooltip"]').tooltip()

@@ -118,7 +118,7 @@ TWITTER
 @app.route('/twittertargets/<int:page>', methods=['GET', 'POST'])
 @auth.login_required
 def twittertargets(page=1):
-    TWITTER = models.TWITTER.query.filter(models.TWITTER.targetType=='User').filter(models.TWITTER.status==1).order_by(models.TWITTER.title).paginate(page, TARGETS_PER_PAGE,False)
+    TWITTER = models.TWITTER.query.filter(models.TWITTER.targetType =='User').filter(models.TWITTER.status == '1').order_by(models.TWITTER.title).paginate(page, TARGETS_PER_PAGE,False)
     form = twitterTargetUserForm(prefix='form')
 
     if request.method == 'POST'and form.validate_on_submit():
@@ -148,7 +148,7 @@ def twittertargets(page=1):
 @app.route('/twittertargetsclosed/<int:page>', methods=['GET', 'POST'])
 @auth.login_required
 def twittertargetsclosed(page=1):
-    TWITTER = models.TWITTER.query.filter(models.TWITTER.targetType=='User').filter(models.TWITTER.status==0).order_by(models.TWITTER.title).paginate(page, TARGETS_PER_PAGE,False)
+    TWITTER = models.TWITTER.query.filter(models.TWITTER.targetType=='User').filter(models.TWITTER.status=='0').order_by(models.TWITTER.title).paginate(page, TARGETS_PER_PAGE,False)
     form = twitterTargetUserForm(prefix='form')
 
     if request.method == 'POST'and form.validate_on_submit():
@@ -325,7 +325,7 @@ def refreshtwittertrend():
 @app.route('/twittersearchtargets/<int:page>', methods=['GET', 'POST'])
 @auth.login_required
 def twittersearchtargets(page=1):
-    TWITTER = models.TWITTER.query.filter(models.TWITTER.targetType == 'Search').filter(models.TWITTER.status==1).order_by(models.TWITTER.title).paginate(page, TARGETS_PER_PAGE, False)
+    TWITTER = models.TWITTER.query.filter(models.TWITTER.targetType == 'Search').filter(models.TWITTER.status=='1').order_by(models.TWITTER.title).paginate(page, TARGETS_PER_PAGE, False)
     templateType = "Search"
     openClosed = "Open"
     collectionForm = twitterCollectionForm(prefix='collectionForm')
@@ -358,7 +358,7 @@ def twittersearchtargets(page=1):
 @app.route('/twittersearchtargetsclosed/<int:page>', methods=['GET', 'POST'])
 @auth.login_required
 def twittersearchtargetsclosed(page=1):
-    TWITTER = models.TWITTER.query.filter(models.TWITTER.targetType == 'Search').filter(models.TWITTER.status==0).order_by(models.TWITTER.title).paginate(page, TARGETS_PER_PAGE, False)
+    TWITTER = models.TWITTER.query.filter(models.TWITTER.targetType == 'Search').filter(models.TWITTER.status=='0').order_by(models.TWITTER.title).paginate(page, TARGETS_PER_PAGE, False)
     templateType = "Search"
     langChoices = [(c.term, c.term) for c in models.VOCABS.query.filter(models.VOCABS.use == 'langcode').order_by(models.VOCABS.term.asc()).all()]
     form = twitterTargetForm(prefix='form')
@@ -502,6 +502,7 @@ def twittertargetDetail(id):
     SEARCH = models.SEARCH.query.filter(models.SEARCH.username==TWITTER.title).filter(models.SEARCH.ia_uri != None ).limit(5)
     SEARCH_SEARCH = models.SEARCH.query.filter(models.SEARCH.source==id).filter(models.SEARCH.ia_uri != None).limit(5)
     langChoices = [(c.term, c.term) for c in models.VOCABS.query.filter(models.VOCABS.use == 'langcode').order_by(models.VOCABS.term.asc()).all()]
+    userForm = twitterTargetUserForm(prefix='userform', obj=object)
     form = twitterTargetForm(prefix='form', obj=object)
     form.searchLang.choices = langChoices
     assForm = collectionAddForm(prefix="assForm")
@@ -552,9 +553,23 @@ def twittertargetDetail(id):
             db.session.rollback()
         return redirect(url_for('twittertargetDetail',id=id))
 
+    if request.method == 'POST' and userForm.validate_on_submit():
+        try:
+            userForm.populate_obj(object)
+            addLog = models.CRAWLLOG(tag_title=userForm.title.data, event_start=datetime.now(),
+                                     event_text='Description modified')
+            object.logs.append(addLog)
+            db.session.add(object)
+            db.session.commit()
+            db.session.close()
+            flash(u'Record saved! ', 'success')
+        except IntegrityError:
+            flash(u'Twitter user account already in database ', 'danger')
+            db.session.rollback()
 
+        return redirect(url_for('twittertargetDetail', id=id))
 
-    return render_template("twittertargetdetail.html", TWITTER=TWITTER, form=form, netForm=netForm, CRAWLLOG=CRAWLLOG, EXPORTS=EXPORTS, SEARCH = SEARCH, SEARCH_SEARCH=SEARCH_SEARCH,linkedCollections=linkedCollections, assForm=assForm, l=l, ref = request.referrer)
+    return render_template("twittertargetdetail.html", TWITTER=TWITTER, form=form, userForm=userForm,netForm=netForm, CRAWLLOG=CRAWLLOG, EXPORTS=EXPORTS, SEARCH = SEARCH, SEARCH_SEARCH=SEARCH_SEARCH,linkedCollections=linkedCollections, assForm=assForm, l=l, ref = request.referrer)
 
 '''Route to detail view of collections'''
 @app.route('/collectiondetail/<id>/<int:page>', methods=['GET', 'POST'])

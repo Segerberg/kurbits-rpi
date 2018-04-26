@@ -174,7 +174,7 @@ class SEARCH(db.Model):
     row_id = db.Column(db.Integer, primary_key=True)
     screen_name = db.Column(db.String(250))
     username = db.Column(db.String(250))
-    tweet_id = db.Column(db.Integer)
+    tweet_id = db.Column(db.String(250))
     text = db.Column(db.String(1000))
     created_at = db.Column(db.DateTime)
     source = db.Column(db.String(250))
