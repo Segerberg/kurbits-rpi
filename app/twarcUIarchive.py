@@ -103,12 +103,12 @@ def twittercrawl(id):
             # update database with new total tweet count
             TWITTER.totalTweets = TWITTER.totalTweets + tweetCount
             addLog = models.CRAWLLOG(tag_title=TWITTER.title, event_start=datetime.now(),
-                                     event_text='archived {} tweets'.format(tweetCount))
+                                     event_text='archived {} tweets'.format(tweetCount),event_description=None)
             TWITTER.logs.append(addLog)
             db.session.commit()
         else:
             addLog = models.CRAWLLOG(tag_title=TWITTER.title, event_start=datetime.now(),
-                                     event_text='archived {} tweets'.format(tweetCount))
+                                     event_text='archived {} tweets'.format(tweetCount),event_description=None)
             TWITTER.logs.append(addLog)
 
             db.session.commit()

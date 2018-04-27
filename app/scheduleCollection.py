@@ -14,7 +14,7 @@ def startScheduleCollectionCrawl(id):
             first(). \
             tags
         for target in linkedTargets:
-            if target.status == 1:
+            if target.status == '1':
                 last_crawl = models.TWITTER.query.get(target.row_id)
                 last_crawl.lastCrawl = datetime.now()
                 db.session.commit()

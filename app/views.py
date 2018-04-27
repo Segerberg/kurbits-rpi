@@ -131,7 +131,7 @@ def twittertargets(page=1):
                                        added=datetime.now(), woeid=None, index=form.index.data, schedule=None, scheduleInterval=None, scheduleText = None,
                                        ia_uri=None, ia_cap_count=0, ia_cap_date=None)
 
-            addLog = models.CRAWLLOG(tag_title=form.title.data,event_start=datetime.now(), event_text='Target added')
+            addLog = models.CRAWLLOG(tag_title=form.title.data,event_start=datetime.now(), event_text='Target added',event_description=None)
             addTarget.logs.append(addLog)
             db.session.add(addTarget)
             db.session.commit()
@@ -161,7 +161,7 @@ def twittertargetsclosed(page=1):
                                        added=datetime.now(), woeid=None, index=form.index.data, schedule=None, scheduleInterval=None, scheduleText = None,
                                        ia_uri=None,ia_cap_count=0, ia_cap_date=None)
 
-            addLog = models.CRAWLLOG(tag_title=form.title.data,event_start=datetime.now(), event_text='Target added')
+            addLog = models.CRAWLLOG(tag_title=form.title.data,event_start=datetime.now(), event_text='Target added',event_description=None)
             addTarget.logs.append(addLog)
             db.session.add(addTarget)
             db.session.commit()
@@ -219,7 +219,7 @@ def addtwittertrend(id):
                                    schedule=None, scheduleInterval=None, scheduleText = None,
                                    ia_uri=None,ia_cap_count=0,ia_cap_date=None)
 
-        addLog = models.CRAWLLOG(tag_title=id, event_start=datetime.now(), event_text='Target added')
+        addLog = models.CRAWLLOG(tag_title=id, event_start=datetime.now(), event_text='Target added',event_description=None)
         for t in trendAll:
             if t.name == id:
                 t.saved= True
@@ -340,7 +340,7 @@ def twittersearchtargets(page=1):
                                        added=datetime.now(), woeid=None, index=form.index.data,
                                        schedule=None, scheduleInterval=None, scheduleText = None,
                                        ia_uri=None,ia_cap_count=0,ia_cap_date=None)
-            addLog = models.CRAWLLOG(tag_title=form.title.data, event_start=datetime.now(), event_text='Target added')
+            addLog = models.CRAWLLOG(tag_title=form.title.data, event_start=datetime.now(), event_text='Target added',event_description=None)
             addTarget.logs.append(addLog)
             db.session.add(addTarget)
             db.session.commit()
@@ -370,7 +370,7 @@ def twittersearchtargetsclosed(page=1):
                                        status=form.status.data, lastCrawl=None, totalTweets=0,
                                        added=datetime.now(), woeid=None, index=form.index.data, schedule=None, scheduleInterval=None, scheduleText = None,
                                        ia_uri=None,ia_cap_count=0,ia_cap_date=None)
-            addLog = models.CRAWLLOG(tag_title=form.title.data, event_start=datetime.now(), event_text='Target added')
+            addLog = models.CRAWLLOG(tag_title=form.title.data, event_start=datetime.now(), event_text='Target added',event_description=None)
             addTarget.logs.append(addLog)
             db.session.add(addTarget)
             db.session.commit()
@@ -436,7 +436,7 @@ def userlist(id,page=1):
                                        added=datetime.now(), woeid=None, index=form.index.data, schedule=None, scheduleInterval=None , scheduleText = None,
                                        ia_uri=None, ia_cap_count=0,ia_cap_date=None)
 
-            addLog = models.CRAWLLOG(tag_title=form.title.data, event_start=datetime.now(), event_text='Target added')
+            addLog = models.CRAWLLOG(tag_title=form.title.data, event_start=datetime.now(), event_text='Target added',event_description=None)
             addTarget.logs.append(addLog)
             db.session.add(addTarget)
             db.session.commit()
@@ -476,7 +476,7 @@ def searchlist(id, page=1):
                                        status=form.status.data, lastCrawl=None, totalTweets=0,
                                        added=datetime.now(), woeid=None, index=form.index.data, schedule=None, scheduleInterval=None , scheduleText = None,
                                        ia_uri=None, ia_cap_count=0,ia_cap_date=None)
-            addLog = models.CRAWLLOG(tag_title=form.title.data, event_start=datetime.now(), event_text='Target added')
+            addLog = models.CRAWLLOG(tag_title=form.title.data, event_start=datetime.now(), event_text='Target added',event_description=None)
             addTarget.logs.append(addLog)
             db.session.add(addTarget)
             db.session.commit()
@@ -542,7 +542,7 @@ def twittertargetDetail(id):
     if request.method == 'POST' and form.validate_on_submit():
         try:
             form.populate_obj(object)
-            addLog = models.CRAWLLOG(tag_title=form.title.data, event_start=datetime.now(), event_text='Description modified')
+            addLog = models.CRAWLLOG(tag_title=form.title.data, event_start=datetime.now(), event_text='Description modified',event_description=None)
             object.logs.append(addLog)
             db.session.add(object)
             db.session.commit()
@@ -557,7 +557,7 @@ def twittertargetDetail(id):
         try:
             userForm.populate_obj(object)
             addLog = models.CRAWLLOG(tag_title=userForm.title.data, event_start=datetime.now(),
-                                     event_text='Description modified')
+                                     event_text='Description modified',event_description=None)
             object.logs.append(addLog)
             db.session.add(object)
             db.session.commit()
@@ -634,7 +634,7 @@ def collectionDetail(id, page=1):
                                        added=datetime.now(), woeid=None, index=targetForm.index.data, schedule=None, scheduleInterval=None, scheduleText = None,
                                        ia_uri=None,ia_cap_count=0,ia_cap_date=None)
 
-            addLog = models.CRAWLLOG(tag_title=targetForm.title.data, event_start=datetime.now(), event_text='Target added')
+            addLog = models.CRAWLLOG(tag_title=targetForm.title.data, event_start=datetime.now(), event_text='Target added',event_description=None)
             #addTarget.logs.append(addLog)
             #db.session.add(addTarget)
             object.tags.append(addTarget)
@@ -659,7 +659,7 @@ def collectionDetail(id, page=1):
                                        ia_uri=None,ia_cap_count=0,ia_cap_date=None)
 
             addLog = models.CRAWLLOG(tag_title=targetForm.title.data, event_start=datetime.now(),
-                                     event_text='Target added')
+                                     event_text='Target added',event_description=None)
             # addTarget.logs.append(addLog)
             # db.session.add(addTarget)
             object.tags.append(addTarget)
@@ -709,7 +709,7 @@ Route to reactivate twitter-target
 @auth.login_required
 def reactivateTwitterTarget(id):
     object = models.TWITTER.query.get_or_404(id)
-    object.status = 1
+    object.status = '1'
     db.session.commit()
     if object.targetType == 'Search':
         return redirect('/twittersearchtargetsclosed/1')

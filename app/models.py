@@ -10,7 +10,7 @@ assoc_twitter_collections = db.Table('ASSOC_TWITTER_COLLECTIONS',
 class TWITTER(db.Model):
     __tablename__ = 'TWITTER'
     row_id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(50), unique=True, nullable=False, index=True)
+    title = db.Column(db.String(250), unique=True, nullable=False, index=True)
     searchString = db.Column(db.String(250), nullable=False)
     searchLang = db.Column(db.String(10))
     creator = db.Column(db.String(50))
@@ -159,14 +159,15 @@ class CRAWLLOG(db.Model):
     row_id = db.Column(db.Integer, primary_key=True)
     event_start = db.Column(db.DateTime)
     event_text = db.Column(db.String(250))
-    tag_title = db.Column(db.String(50))
+    event_description = db.Column(db.Text)
+    tag_title = db.Column(db.String(250))
     tag_id = db.Column( db.Integer, db.ForeignKey('TWITTER.row_id'),nullable = False)
 
 
-    def __init__(self,event_start, event_text, tag_title):
+    def __init__(self,event_start, event_text, event_description, tag_title):
         self.event_start = event_start
         self.event_text = event_text
-
+        self.event_description = event_description
         self.tag_title = tag_title
 
 class SEARCH(db.Model):
