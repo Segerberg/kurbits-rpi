@@ -79,9 +79,9 @@ def networkUserSearch(id, users,retweets,min_subgraph_size, max_subgraph_size,ou
     for filename in os.listdir(os.path.join(ARCHIVE_BASEDIR,q.title)):
         if filename.endswith(".gz"):
             for line in gzip.open(os.path.join(ARCHIVE_BASEDIR,q.title,filename)):
-                count = count + 1
+
                 try:
-                    t = json.loads(line)
+                    t = json.loads(line.decode('utf-8'))
                 except:
                     continue
                 from_id = t['id_str']
@@ -89,6 +89,7 @@ def networkUserSearch(id, users,retweets,min_subgraph_size, max_subgraph_size,ou
                 from_user_id = t['user']['id_str']
                 to_user = None
                 to_id = None
+                count = count + 1
                 if users:
                     for u in t['entities'].get('user_mentions', []):
                         add(from_user, from_id, u['screen_name'], None, 'reply')
