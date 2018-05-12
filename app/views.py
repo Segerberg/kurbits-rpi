@@ -240,7 +240,7 @@ def cleartwittertrend(id):
     print (request.url_rule)
     for t in trendAll:
         for trend in t.trends:
-            if trend.saved == False:
+            if trend.saved == False and trend.silence == False:
                 db.session.delete(trend)
     db.session.commit()
     return redirect((url_for('twittertrends')))
@@ -512,6 +512,9 @@ def twittertargetDetail(id):
         first(). \
         tags
     l = []
+    '''fileList = {}
+    for filename in os.listdir(os.path.join(ARCHIVE_BASEDIR,q.title)):
+        if filename.endswith(".gz"):'''
 
 
     if request.method == 'POST' and assForm.validate_on_submit():
@@ -542,7 +545,8 @@ def twittertargetDetail(id):
     if request.method == 'POST' and form.validate_on_submit():
         try:
             form.populate_obj(object)
-            addLog = models.CRAWLLOG(tag_title=form.title.data, event_start=datetime.now(), event_text='Description modified',event_description=None)
+            addLog = models.CRAWLLOG(tag_title=form.title.data, event_start=datetime.now(), event_text='Description modified',
+                                     event_description=None)
             object.logs.append(addLog)
             db.session.add(object)
             db.session.commit()
@@ -1003,8 +1007,9 @@ def settings():
 
     #DISKS
     for mountPoint in psutil.disk_partitions():
-        x = dict(p=psutil.disk_usage(mountPoint[1])[3], n=mountPoint[0], f=str(psutil.disk_usage(mountPoint[1])[2]/ (1024.0 ** 3)))
+        x = dict(p=psutil.disk_usage(mountPoint[1])[3], n=mountPoint[0],m=mountPoint[1], f=str(psutil.disk_usage(mountPoint[1])[2]/ (1024.0 ** 3)))
         print (x)
+        print (mountPoint[1])
         diskList.append(x)
 
     #REDIS
