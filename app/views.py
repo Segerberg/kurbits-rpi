@@ -27,7 +27,10 @@ import psutil
 import uuid
 from flask_httpauth import HTTPBasicAuth
 from werkzeug.security import generate_password_hash, check_password_hash
-
+import subprocess
+from .decorators import async
+from internal_worker2 import intWorker
+from .scripts import humansize
 auth = HTTPBasicAuth()
 q = Queue(connection=Redis())
 eq = Queue('internal',connection=Redis())
@@ -512,9 +515,19 @@ def twittertargetDetail(id):
         first(). \
         tags
     l = []
-    '''fileList = {}
-    for filename in os.listdir(os.path.join(ARCHIVE_BASEDIR,q.title)):
-        if filename.endswith(".gz"):'''
+    fileList = []
+    try:
+        for filename in os.listdir(os.path.join(ARCHIVE_BASEDIR,TWITTER.title)):
+            if filename.endswith(".gz"):
+                try:
+                    mtime = os.path.getmtime(os.path.join(ARCHIVE_BASEDIR,TWITTER.title,filename))
+                except OSError:
+                    mtime = 0
+                last_modified_date = datetime.fromtimestamp(mtime)
+                x = dict(fname=filename, fsize=humansize(os.path.getsize(os.path.join(ARCHIVE_BASEDIR,TWITTER.title,filename))), fdate=last_modified_date)
+                fileList.append(x)
+    except:
+        pass
 
 
     if request.method == 'POST' and assForm.validate_on_submit():
@@ -573,7 +586,36 @@ def twittertargetDetail(id):
 
         return redirect(url_for('twittertargetDetail', id=id))
 
-    return render_template("twittertargetdetail.html", TWITTER=TWITTER, form=form, userForm=userForm,netForm=netForm, CRAWLLOG=CRAWLLOG, EXPORTS=EXPORTS, SEARCH = SEARCH, SEARCH_SEARCH=SEARCH_SEARCH,linkedCollections=linkedCollections, assForm=assForm, l=l, ref = request.referrer)
+    return render_template("twittertargetdetail.html", TWITTER=TWITTER, fileList = fileList, form=form, userForm=userForm,netForm=netForm, CRAWLLOG=CRAWLLOG, EXPORTS=EXPORTS, SEARCH = SEARCH, SEARCH_SEARCH=SEARCH_SEARCH,linkedCollections=linkedCollections, assForm=assForm, l=l, ref = request.referrer)
+
+
+'''
+Route to delete tweet json file 
+'''
+@app.route('/deletefile/<id>/<filename>')
+@auth.login_required
+def deletefile(id,filename):
+    import gzip
+    TWITTER = models.TWITTER.query.get_or_404(id)
+    try:
+        tweetCount = 0
+        for line in gzip.open(os.path.join(ARCHIVE_BASEDIR, TWITTER.title, filename)):
+            tweetCount = tweetCount + 1
+        os.remove(os.path.join(ARCHIVE_BASEDIR,TWITTER.title,filename))
+        flash(u'Archive file deleted!', 'success')
+        addLog = models.CRAWLLOG(tag_title=TWITTER.title, event_start=datetime.now(),
+                                 event_text='Archive file deleted',
+                                 event_description=None)
+        TWITTER.logs.append(addLog)
+        TWITTER.totalTweets = TWITTER.totalTweets - tweetCount
+        db.session.commit()
+        db.session.close()
+    except:
+        flash(u'Archive file could not be deleted!', 'danger')
+        pass
+
+    return redirect(request.referrer)
+
 
 '''Route to detail view of collections'''
 @app.route('/collectiondetail/<id>/<int:page>', methods=['GET', 'POST'])
@@ -950,11 +992,11 @@ def export(filename):
     return send_from_directory(app.config['EXPORTS_BASEDIR'],
                                filename)
 '''
-Route to send joblog 
+Route to send from archive dir
 '''
-@app.route('/joblog/<id>/<filename>')
+@app.route('/archivedir/<id>/<filename>')
 @auth.login_required
-def joblog(id,filename):
+def archivedir(id,filename):
     object = models.TWITTER.query.get_or_404(id)
     return send_from_directory(os.path.join(app.config['ARCHIVE_BASEDIR'],object.title),
                                filename)
@@ -975,6 +1017,8 @@ def deleteexport(filename):
     db.session.commit()
     db.session.close()
     return redirect(request.referrer)
+
+
 
 '''SETTINGS ROUTE'''
 @app.route('/settings', methods=['GET', 'POST'])
