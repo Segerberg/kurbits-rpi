@@ -56,7 +56,7 @@ class SearchForm(FlaskForm):
 
 
 class twitterTrendForm(FlaskForm):
-    geoloc = StringField(u'geo location', validators=[DataRequired(),Regexp(message='Not a valid geolocation, sorry.',regex="^[-+]?([1-8]?\d(\.\d+)?|90(\.0+)?),\s*[-+]?(180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?)$")])
+    geoloc = StringField(u'Geo Location', validators=[DataRequired(),Regexp(message='Not a valid geolocation, sorry.',regex="^[-+]?([1-8]?\d(\.\d+)?|90(\.0+)?),\s*[-+]?(180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?)$")])
 
 
 class stopWordsForm(FlaskForm):
@@ -66,7 +66,7 @@ class collectionTypeForm(FlaskForm):
     type = StringField(u'Collection Type', validators=[DataRequired()])
 
 class langCodeForm(FlaskForm):
-    type = StringField(u'Collection Type', validators=[DataRequired()])
+    type = StringField(u'Language Code', validators=[DataRequired()])
 
 SCHEDULE_CHOICES = [('604800', 'Weekly'), ('86400', 'Daily'),('43200', 'Twice a day'),
                                             ('21600', 'Four times a day'),('10800', 'Every third hour'),
@@ -80,3 +80,10 @@ class passwordForm(FlaskForm):
         validators.EqualTo('confirm', message='Passwords must match')
     ])
     confirm = PasswordField('Repeat Password')
+
+class credForm(FlaskForm):
+    name = StringField(u'Name', validators=[DataRequired()])
+    consumer_key = StringField(u'Consumer Key', validators=[DataRequired()])
+    consumer_secret = StringField(u'Consumer Secret', validators=[DataRequired()])
+    access_token = StringField(u'Access Token', validators=[DataRequired()])
+    access_secret = StringField(u'Access Secret', validators=[DataRequired()])

@@ -24,6 +24,8 @@ archive_file_pat = "tweets-(\d+).json.gz$"
 
 def twittercrawl(id):
     with app.app_context():
+        #CREDENTIALS = models.CREDENTIALS.query.filter(models.CREDENTIALS.name == 'main').first()
+        CREDENTIALS = models.CREDENTIALS.query.one()
         TWITTER = models.TWITTER.query.filter(models.TWITTER.row_id == id).first()
         if not os.path.isdir(os.path.join(ARCHIVE_BASEDIR,TWITTER.title)):
             os.makedirs(os.path.join(ARCHIVE_BASEDIR,TWITTER.title))
@@ -36,10 +38,10 @@ def twittercrawl(id):
 
         logging.info("logging search for %s to %s", TWITTER.title, os.path.join(ARCHIVE_BASEDIR,TWITTER.title))
 
-        t = twarc.Twarc(consumer_key=CONSUMER_KEY,
-                        consumer_secret=CONSUMER_SECRET,
-                        access_token=ACCESS_TOKEN,
-                        access_token_secret=ACCESS_SECRET,
+        t = twarc.Twarc(consumer_key=CREDENTIALS.consumer_key,
+                        consumer_secret=CREDENTIALS.consumer_secret,
+                        access_token=CREDENTIALS.access_token,
+                        access_token_secret=CREDENTIALS.access_secret,
                         #config=args.config,
                         #tweet_mode=args.tweet_mode
                         )

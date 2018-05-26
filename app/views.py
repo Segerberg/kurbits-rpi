@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 from app import app, render_template, request,db, url_for, redirect,flash,Response,jsonify, send_from_directory
 from app import models
-from .forms import twitterTargetForm, twitterTargetUserForm, SearchForm, twitterCollectionForm, collectionAddForm, twitterTrendForm, stopWordsForm, scheduleForm,SCHEDULE_CHOICES, passwordForm, collectionTypeForm, langCodeForm, networkForm
+from .forms import twitterTargetForm, twitterTargetUserForm, SearchForm, twitterCollectionForm, collectionAddForm, twitterTrendForm, stopWordsForm, scheduleForm,SCHEDULE_CHOICES, passwordForm, collectionTypeForm, langCodeForm, networkForm,credForm
 from sqlalchemy.exc import IntegrityError
 from .twarcUIarchive import twittercrawl
 from .twitterTrends import getTrends
@@ -294,9 +294,14 @@ def alterCollectionType(type, id):
 def alterLangCode(type, id):
     if type == 'add':
         langForm = langCodeForm()
-        langcode = models.VOCABS(term=langForm.type.data,use='langcode',description=None)
-        db.session.add(langcode)
-        db.session.commit()
+        if len(langForm.type.data) > 2 :
+            flash(u'Sorry not a valid language code! ', 'danger')
+        else:
+            langcode = models.VOCABS(term=langForm.type.data,use='langcode',description=None)
+            db.session.add(langcode)
+            db.session.commit()
+            flash(u'Added {} to language codes'.format(langForm.type.data), 'success')
+
     else:
         langcode = models.VOCABS.query.get_or_404(id)
         db.session.delete(langcode)
@@ -1029,15 +1034,27 @@ def settings():
     passForm = passwordForm()
     typeForm = collectionTypeForm()
     langForm = langCodeForm()
+    credentialForm = credForm()
     silencedTrends = models.TWITTER_TRENDS.query.filter(models.TWITTER_TRENDS.silence == True).order_by(models.TWITTER_TRENDS.name.asc()).all()
     collectionTypes = models.VOCABS.query.filter(models.VOCABS.use=='collectionType').order_by(models.VOCABS.term.asc()).all()
     langcodes = models.VOCABS.query.filter(models.VOCABS.use == 'langcode').order_by(models.VOCABS.term.asc()).all()
+    credentials = models.CREDENTIALS.query.all()
+
     if request.method == 'POST' and passForm.validate_on_submit():
-        #TWITTER = models.TWITTER.query.filter(models.TWITTER.row_id == id).first()
         USERS = models.USERS.query.filter(models.USERS.row_id == 1).first()
         USERS.passw = generate_password_hash(passForm.password.data)
         db.session.commit()
         flash(u'Admin password changed', 'success')
+        return redirect(request.referrer)
+
+    if request.method == 'POST' and credentialForm.validate_on_submit():
+        addCred = models.CREDENTIALS(name=credentialForm.name.data,consumer_key=credentialForm.consumer_key.data,
+                                     consumer_secret=credentialForm.consumer_secret.data,access_token=credentialForm.access_token.data,
+                                     access_secret=credentialForm.access_secret.data)
+        db.session.add(addCred)
+        db.session.commit()
+        flash(u'Added Twitter Credentials'.format(credentialForm.name.data), 'success')
+        return redirect(request.referrer)
 
 
     if request.method == 'POST' and stopForm.validate_on_submit():
@@ -1059,17 +1076,17 @@ def settings():
     #REDIS
     workers = Worker.all(connection=Redis())
 
-    return render_template("settings.html", collectionTypes = collectionTypes ,stopWords = stopWords, stopForm = stopForm, passForm = passForm, diskList=diskList, workers=workers,qlen=len(q),intqlen=len(eq), silencedTrends = silencedTrends, typeForm=typeForm,langForm=langForm,langcodes=langcodes)
+    return render_template("settings.html", credentials = credentials, credentialForm = credentialForm, collectionTypes = collectionTypes ,stopWords = stopWords, stopForm = stopForm, passForm = passForm, diskList=diskList, workers=workers,qlen=len(q),intqlen=len(eq), silencedTrends = silencedTrends, typeForm=typeForm,langForm=langForm,langcodes=langcodes)
 
 
-'''Route to remove stop word'''
-@app.route('/removestopword/<id>', methods=['GET', 'POST'])
+'''Route to remove credential'''
+@app.route('/removecredential/<id>', methods=['GET', 'POST'])
 @auth.login_required
-def removestopword(id):
-    object = object =  db.session.query(models.STOPWORDS).get(id)
+def removecredential(id):
+    object =  db.session.query(models.CREDENTIALS).get(id)
     db.session.delete(object)
     db.session.commit()
-    flash(u'{} was removed from stop word list!'.format(object.stop_word), 'success')
+    flash(u'Credential named {} was deleted!'.format(object.name), 'success')
     return redirect(request.referrer)
 
 

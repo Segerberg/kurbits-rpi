@@ -4,11 +4,12 @@ from datetime import datetime
 from config import CONSUMER_KEY,CONSUMER_SECRET,ACCESS_TOKEN,ACCESS_SECRET
 import twarc
 def getTrends():
+    CREDENTIALS = models.CREDENTIALS.query.one()
     loc = models.TRENDS_LOC.query.all()
-    t = twarc.Twarc(consumer_key=CONSUMER_KEY,
-                    consumer_secret=CONSUMER_SECRET,
-                    access_token=ACCESS_TOKEN,
-                    access_token_secret=ACCESS_SECRET)
+    t = twarc.Twarc(consumer_key=CREDENTIALS.consumer_key,
+                    consumer_secret=CREDENTIALS.consumer_secret,
+                    access_token=CREDENTIALS.access_token,
+                    access_token_secret=CREDENTIALS.access_secret)
 
     for location in loc:
 

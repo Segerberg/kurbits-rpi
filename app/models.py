@@ -234,3 +234,19 @@ class USERS(db.Model):
     def __init__(self,user, passw):
         self.user = user
         self.passw = passw
+
+class CREDENTIALS(db.Model):
+    __tablename__ = 'CREDENTIALS'
+    row_id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(250))
+    consumer_key = db.Column(db.String(250))
+    consumer_secret = db.Column(db.String(250))
+    access_token = db.Column(db.String(250))
+    access_secret = db.Column(db.String(250))
+
+    def __init__(self,name,consumer_key,consumer_secret,access_token,access_secret):
+        self.name = name
+        self.consumer_key = consumer_key
+        self.consumer_secret = consumer_secret
+        self.access_token = access_token
+        self.access_secret = access_secret

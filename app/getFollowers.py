@@ -6,11 +6,12 @@ import uuid
 import twarc
 
 def Followers(id):
+    CREDENTIALS = models.CREDENTIALS.query.one()
     with app.test_request_context():
-        t = twarc.Twarc(consumer_key=CONSUMER_KEY,
-                    consumer_secret=CONSUMER_SECRET,
-                    access_token=ACCESS_TOKEN,
-                    access_token_secret=ACCESS_SECRET)
+        t = twarc.Twarc(consumer_key=CREDENTIALS.consumer_key,
+                    consumer_secret=CREDENTIALS.consumer_secret,
+                    access_token=CREDENTIALS.access_token,
+                    access_token_secret=CREDENTIALS.access_secret)
         count = 0
         export_uuid = uuid.uuid4()
         if not os.path.isdir(EXPORTS_BASEDIR):
