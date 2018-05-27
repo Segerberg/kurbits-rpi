@@ -16,7 +16,7 @@ from .tweets2csv import csvUserSearch, csvCollection
 from.network import networkUserSearch
 from .scheduleCollection import startScheduleCollectionCrawl
 from .IA_save import push, pushAccount
-from config import POSTS_PER_PAGE, REDIS_DB, MAP_VIEW,MAP_ZOOM,TARGETS_PER_PAGE,EXPORTS_BASEDIR,ARCHIVE_BASEDIR, TREND_UPDATE
+from config import POSTS_PER_PAGE, REDIS_DB, MAP_VIEW,MAP_ZOOM,TARGETS_PER_PAGE,EXPORTS_BASEDIR,ARCHIVE_BASEDIR, TREND_UPDATE, SQLALCHEMY_DATABASE_URI
 from datetime import datetime, timedelta
 from redis import Redis
 from rq import Queue
@@ -27,7 +27,10 @@ import psutil
 import uuid
 from flask_httpauth import HTTPBasicAuth
 from werkzeug.security import generate_password_hash, check_password_hash
-import subprocess
+import sqlalchemy
+from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
+#import subprocess
+from eventlet.green import subprocess
 from .decorators import async
 from internal_worker2 import intWorker
 from .scripts import humansize
@@ -1124,6 +1127,27 @@ def uploadStopWords():
         flash(u'{} stop words added!'.format(lineCount), 'success')
         return redirect(request.referrer)
 
+@auth.login_required
+@app.route('/deleteindex', methods=['GET','POST'])
+def deleteIndex():
+    models.SEARCH.query.filter(models.SEARCH.ia_uri == None).delete()
+    db.session.commit()
+    engine = sqlalchemy.create_engine(SQLALCHEMY_DATABASE_URI)
+    connection = engine.raw_connection()
+    connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+    cursor = connection.cursor()
+    cursor.execute('VACUUM ANALYSE "SEARCH"')
+    return redirect(url_for('settings'))
+
+@auth.login_required
+@app.route('/vaccum', methods=['GET','POST'])
+def vaccum():
+    engine = sqlalchemy.create_engine(SQLALCHEMY_DATABASE_URI)
+    connection = engine.raw_connection()
+    connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+    cursor = connection.cursor()
+    cursor.execute('VACUUM FULL')
+    return redirect(url_for('settings'))
 
 
 
