@@ -108,14 +108,23 @@
         </div>
         <div id="collapse4" class="panel-collapse collapse in">
             <div class="panel-body">
-                <div class="list-group">
-                    <span class="list-group-item">Twitter archive jobs <span class="badge">{{qlen}}</span>
-                </div>
-                <div class="list-group">
-                    <span class="list-group-item">Internal jobs <span class="badge">{{intqlen}}</span>
-                </div>
-
-
+                 <table id="stopWordTable" class="table table-bordered">
+                        <tr>
+                            <th>Queue</th>
+                            <th>Jobs</th>
+                            <th>Action</th>
+                        </tr>
+                      <tr>
+                        <td>Twitter archive jobs</td>
+                        <td><span class="badge">{{qlen}}</span></td>
+                        <td><a href="{{ url_for('clearQueue', type='archive') }}" class="btn btn-danger btn-xs pull-right" role="button" ><i class="fa fa-ban fa-fw"></i></a></td>
+                    </tr>
+                         <tr>
+                        <td>Internal jobs</td>
+                        <td><span class="badge">{{intqlen}}</span></td>
+                        <td><a href="{{ url_for('clearQueue', type='internal') }}" class="btn btn-danger btn-xs pull-right" role="button" ><i class="fa fa-ban fa-fw"></i></a></td>
+                    </tr>
+                 </table>
             </div>
         </div>
     </div>

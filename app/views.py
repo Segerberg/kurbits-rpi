@@ -1151,4 +1151,13 @@ def vaccum():
 
 
 
+@auth.login_required
+@app.route('/clearqueue/<type>', methods=['GET','POST'])
+def clearQueue(type):
+    if type == 'internal':
+        eq.empty()
 
+    elif type == 'archive':
+        q.empty()
+
+    return redirect(url_for('settings'))
