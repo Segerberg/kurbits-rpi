@@ -29,11 +29,9 @@ from flask_httpauth import HTTPBasicAuth
 from werkzeug.security import generate_password_hash, check_password_hash
 import sqlalchemy
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
-#import subprocess
-from eventlet.green import subprocess
+import subprocess
 from .decorators import async
-from internal_worker2 import intWorker
-from .scripts import humansize
+from .scripts import humansize, delIndex, vac
 auth = HTTPBasicAuth()
 q = Queue(connection=Redis())
 eq = Queue('internal',connection=Redis())
@@ -42,7 +40,7 @@ scheduler = Scheduler(connection=Redis())
 @app.before_first_request
 def before_first_request():
     COLLECTIONS = models.COLLECTION.query.all()
-
+    '''
     for collection in COLLECTIONS:
         if collection.schedule:
             scheduler.cancel(collection.schedule)
@@ -53,7 +51,7 @@ def before_first_request():
                 interval=collection.scheduleInterval,  # Time before the function is called again, in seconds
                 repeat=None,  # Repeat this number of times (None means repeat forever)
                 id=collection.schedule
-            )
+            )'''
 
 
     scheduler.cancel('trendSchedule')
@@ -68,7 +66,8 @@ def before_first_request():
 
 @app.before_request
 def before_request():
-        search_form = SearchForm()
+    print('aaa')
+        #search_form = SearchForm()
 
 
 def queryUser():
@@ -1092,6 +1091,16 @@ def removecredential(id):
     flash(u'Credential named {} was deleted!'.format(object.name), 'success')
     return redirect(request.referrer)
 
+'''Route to remove stop word'''
+@app.route('/removestopword/<id>', methods=['GET', 'POST'])
+@auth.login_required
+def removestopword(id):
+    object = object =  db.session.query(models.STOPWORDS).get(id)
+    db.session.delete(object)
+    db.session.commit()
+    flash(u'{} was removed from stop word list!'.format(object.stop_word), 'success')
+    return redirect(request.referrer)
+
 
 # Function to control allowed file extensions
 ALLOWED_EXTENSIONS = set(['txt'])
@@ -1127,26 +1136,17 @@ def uploadStopWords():
         flash(u'{} stop words added!'.format(lineCount), 'success')
         return redirect(request.referrer)
 
+
 @auth.login_required
 @app.route('/deleteindex', methods=['GET','POST'])
 def deleteIndex():
-    models.SEARCH.query.filter(models.SEARCH.ia_uri == None).delete()
-    db.session.commit()
-    engine = sqlalchemy.create_engine(SQLALCHEMY_DATABASE_URI)
-    connection = engine.raw_connection()
-    connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-    cursor = connection.cursor()
-    cursor.execute('VACUUM ANALYSE "SEARCH"')
+    eq.enqueue(delIndex)
     return redirect(url_for('settings'))
 
 @auth.login_required
 @app.route('/vaccum', methods=['GET','POST'])
 def vaccum():
-    engine = sqlalchemy.create_engine(SQLALCHEMY_DATABASE_URI)
-    connection = engine.raw_connection()
-    connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-    cursor = connection.cursor()
-    cursor.execute('VACUUM FULL')
+    eq.enqueue(vac)
     return redirect(url_for('settings'))
 
 
