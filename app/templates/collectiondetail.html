@@ -42,7 +42,8 @@
                     <li><b style="color:grey">Start Date</b>{% if object.inclDateStart != None %} {{ object.inclDateStart.strftime('%Y-%m-%d')}}{% else %} - {% endif %}</li>
                     <li><b style="color:grey">End Date</b>{% if object.inclDateEnd != None %} {{ object.inclDateEnd.strftime('%Y-%m-%d')}}{% else %} - {% endif %}</li>
                 {% if object.schedule != None %}<h5><span class="label label-default">Schedule</span></h5>
-                     <li><b style="color:grey">Runs:</b> {{ object.scheduleText }}</li>
+                     <li><b style="color:grey">Runs:</b> {{ object.scheduleText }} <a href="{{ url_for('dropSchedule', id=object.row_id) }}" class="btn btn-danger btn-xs" role="button" onclick="return confirm('Are you sure you want to remove schedule?');" ><i class="fa fa-ban fa-fw"></i></a></li>
+
 
 
 

@@ -1161,3 +1161,15 @@ def clearQueue(type):
         q.empty()
 
     return redirect(url_for('settings'))
+
+@auth.login_required
+@app.route('/dropSchedule/<id>', methods=['GET','POST'])
+def dropSchedule(id):
+    COLLECTION = models.COLLECTION.query.get_or_404(id)
+    scheduler.cancel(COLLECTION.schedule)
+    COLLECTION.scheduleInterval = None
+    COLLECTION.schedule = None
+    COLLECTION.scheduleText = None
+    db.session.commit()
+
+    return redirect(request.referrer)
