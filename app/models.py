@@ -79,13 +79,14 @@ class COLLECTION(db.Model):
     schedule = db.Column(db.String(250))
     scheduleInterval = db.Column(db.Integer)
     scheduleText = db.Column(db.String(250))
+    nextRun = db.Column(db.DateTime)
 
     exports = db.relationship("EXPORTS", backref='twitter_coll_exports', lazy=True, cascade="save-update, merge, delete")
     tags = db.relationship('TWITTER', secondary=assoc_twitter_collections, lazy='dynamic',back_populates='tags')
 
 
     def __init__(self, title,  curator, collectionType, description, subject, status,inclDateStart,inclDateEnd, lastCrawl, totalTweets,
-                 added, schedule, scheduleInterval, scheduleText):
+                 added, schedule, scheduleInterval, scheduleText, nextRun):
         self.title = title
         self.curator = curator
         self.collectionType = collectionType
@@ -100,6 +101,7 @@ class COLLECTION(db.Model):
         self.schedule = schedule
         self.scheduleInterval = scheduleInterval
         self.scheduleText = scheduleText
+        self.nextRun = nextRun
 
 class TRENDS_LOC(db.Model):
     __tablename__ = 'TRENDS_LOC'

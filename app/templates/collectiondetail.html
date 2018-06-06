@@ -42,7 +42,9 @@
                     <li><b style="color:grey">Start Date</b>{% if object.inclDateStart != None %} {{ object.inclDateStart.strftime('%Y-%m-%d')}}{% else %} - {% endif %}</li>
                     <li><b style="color:grey">End Date</b>{% if object.inclDateEnd != None %} {{ object.inclDateEnd.strftime('%Y-%m-%d')}}{% else %} - {% endif %}</li>
                 {% if object.schedule != None %}<h5><span class="label label-default">Schedule</span></h5>
-                     <li><b style="color:grey">Runs:</b> {{ object.scheduleText }} <a href="{{ url_for('dropSchedule', id=object.row_id) }}" class="btn btn-danger btn-xs" role="button" onclick="return confirm('Are you sure you want to remove schedule?');" ><i class="fa fa-ban fa-fw"></i></a></li>
+                     <li><b style="color:grey">Runs: </b> {{ object.scheduleText }}  </li>
+                    <li><b style="color:grey">Next Run: </b><span id="counter"></span> <span style="color:grey">({{ object.nextRun.strftime('%Y-%m-%d %H:%M') }})</span></li>
+                    <li><a href="{{ url_for('dropSchedule', id=object.row_id) }}" class="btn btn-danger btn-xs" role="button" onclick="return confirm('Are you sure you want to remove schedule?');" ><i class="fa fa-ban fa-fw"></i> Remove</a></li>
 
 
 
@@ -396,6 +398,29 @@ $(document).ready(function()
 );
 
 </script>
+<script>
+var countDownDate = new Date("{{object.nextRun}}").getTime();
+var x = setInterval(function() {
 
+  var now = new Date().getTime();
+
+  var distance = countDownDate - now;
+
+  // Time calculations
+  var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+  var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+  var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+
+  document.getElementById("counter").innerHTML = days + "d " + hours + "h "
+  + minutes + "m " + seconds + "s ";
+
+  if (distance < 0) {
+    clearInterval(x);
+    document.getElementById("counter").innerHTML = "About to launch!";
+  }
+}, 1000);
+</script>
 
 {% endblock %}

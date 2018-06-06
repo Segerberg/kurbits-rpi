@@ -409,7 +409,7 @@ def collections(page=1):
                                        description=collectionForm.description.data, subject=collectionForm.subject.data,
                                        status=collectionForm.status.data, inclDateStart=collectionForm.inclDateStart.data,
                                        inclDateEnd=collectionForm.inclDateStart.data, lastCrawl=None,
-                                       totalTweets=0, added=datetime.now(),schedule=None, scheduleInterval=None, scheduleText = None)
+                                       totalTweets=0, added=datetime.now(),schedule=None, scheduleInterval=None, scheduleText = None, nextRun=None)
 
             #addLog = models.CRAWLLOG(tag_title=form.title.data, event_start=datetime.now(),
             #                         event_text='ADDED TO DB')
@@ -650,7 +650,9 @@ def collectionDetail(id, page=1):
             scheduler.cancel(object.schedule)
         object.schedule = jobId
         object.scheduleText = dict(SCHEDULE_CHOICES).get(schedForm.schedule.data)
-
+        object.scheduleInterval = schedForm.schedule.data
+        object.nextRun = datetime.now() + timedelta(seconds=int(schedForm.schedule.data))
+        print(schedForm.schedule.data)
         scheduler.schedule(
             scheduled_time=datetime.utcnow(),  # Time for first execution, in UTC timezone
             func=startScheduleCollectionCrawl,  # Function to be queued
@@ -1170,6 +1172,7 @@ def dropSchedule(id):
     COLLECTION.scheduleInterval = None
     COLLECTION.schedule = None
     COLLECTION.scheduleText = None
+    COLLECTION.nextRun = None
     db.session.commit()
 
     return redirect(request.referrer)

@@ -1,6 +1,6 @@
 from app import db, models
 from .twarcUIarchive import twittercrawl
-from datetime import datetime
+from datetime import datetime, timedelta
 from redis import Redis
 from rq import Queue
 
@@ -9,6 +9,8 @@ q = Queue(connection=Redis())
 def startScheduleCollectionCrawl(id):
         collectionLastCrawl = models.COLLECTION.query.get(id)
         collectionLastCrawl.lastCrawl = datetime.now()
+        collectionLastCrawl.nextRun = datetime.now() + timedelta(seconds=int(collectionLastCrawl.scheduleInterval))
+        db.session.commit()
         linkedTargets = models.COLLECTION.query. \
             filter(models.COLLECTION.row_id == id). \
             first(). \
