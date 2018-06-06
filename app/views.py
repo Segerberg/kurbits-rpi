@@ -41,7 +41,7 @@ scheduler = Scheduler(connection=Redis())
 def before_first_request():
     COLLECTIONS = models.COLLECTION.query.all()
 
-    for collection in COLLECTIONS:
+    '''for collection in COLLECTIONS:
         if collection.schedule:
             scheduler.cancel(collection.schedule)
             scheduler.schedule(
@@ -53,7 +53,7 @@ def before_first_request():
                 id=collection.schedule
             )
             collection.nextRun = datetime.now() + timedelta(seconds=int(collection.scheduleInterval))
-            db.session.commit()
+            db.session.commit()'''
 
 
     scheduler.cancel('trendSchedule')
@@ -537,7 +537,7 @@ def twittertargetDetail(id):
                 fileList.append(x)
     except:
         pass
-
+    sortedFilelist = sorted(fileList, key=lambda k: k['fname'])
 
     if request.method == 'POST' and assForm.validate_on_submit():
         object.tags.append(assForm.assoc.data)
@@ -595,7 +595,7 @@ def twittertargetDetail(id):
 
         return redirect(url_for('twittertargetDetail', id=id))
 
-    return render_template("twittertargetdetail.html", TWITTER=TWITTER, fileList = fileList, form=form, userForm=userForm,netForm=netForm, CRAWLLOG=CRAWLLOG, EXPORTS=EXPORTS, SEARCH = SEARCH, SEARCH_SEARCH=SEARCH_SEARCH,linkedCollections=linkedCollections, assForm=assForm, l=l, ref = request.referrer)
+    return render_template("twittertargetdetail.html", TWITTER=TWITTER, fileList = sortedFilelist, form=form, userForm=userForm,netForm=netForm, CRAWLLOG=CRAWLLOG, EXPORTS=EXPORTS, SEARCH = SEARCH, SEARCH_SEARCH=SEARCH_SEARCH,linkedCollections=linkedCollections, assForm=assForm, l=l, ref = request.referrer)
 
 
 '''
