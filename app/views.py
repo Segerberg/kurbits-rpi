@@ -40,7 +40,7 @@ scheduler = Scheduler(connection=Redis())
 @app.before_first_request
 def before_first_request():
     COLLECTIONS = models.COLLECTION.query.all()
-    '''
+
     for collection in COLLECTIONS:
         if collection.schedule:
             scheduler.cancel(collection.schedule)
@@ -51,7 +51,9 @@ def before_first_request():
                 interval=collection.scheduleInterval,  # Time before the function is called again, in seconds
                 repeat=None,  # Repeat this number of times (None means repeat forever)
                 id=collection.schedule
-            )'''
+            )
+            collection.nextRun = datetime.now() + timedelta(seconds=int(collection.scheduleInterval))
+            db.session.commit()
 
 
     scheduler.cancel('trendSchedule')
