@@ -1153,6 +1153,19 @@ def vaccum():
     eq.enqueue(vac)
     return redirect(url_for('settings'))
 
+@auth.login_required
+@app.route('/reboot', methods=['GET','POST'])
+def reboot():
+    if request.method == 'POST':
+        cmd = ["reboot", "now"]
+        #cmd = ["ls", "-l"]
+        p = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE,
+                             stdin=subprocess.PIPE)
+        out, err = p.communicate()
+        return out
+    else:
+        return redirect(url_for('index'))
 
 
 @auth.login_required
