@@ -1158,7 +1158,6 @@ def vaccum():
 def reboot():
     if request.method == 'POST':
         cmd = ["reboot", "now"]
-        #cmd = ["ls", "-l"]
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE,
                              stdin=subprocess.PIPE)
@@ -1167,6 +1166,18 @@ def reboot():
     else:
         return redirect(url_for('index'))
 
+@auth.login_required
+@app.route('/shutdown', methods=['GET','POST'])
+def shutdown():
+    if request.method == 'POST':
+        cmd = ["shutdown","-h","now"]
+        p = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE,
+                             stdin=subprocess.PIPE)
+        out, err = p.communicate()
+        return out
+    else:
+        return redirect(url_for('index'))
 
 @auth.login_required
 @app.route('/clearqueue/<type>', methods=['GET','POST'])

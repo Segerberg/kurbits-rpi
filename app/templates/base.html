@@ -32,6 +32,8 @@
   </head>
   <body>
   <div id="wrapper">
+      <form id="rebootForm"  action="{{ url_for('reboot') }}" method="POST"></form>
+      <form id="shutdownForm"  action="{{ url_for('shutdown') }}" method="POST"></form>
       <!-- Navigation -->
       <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0">
           <div class="navbar-header">
@@ -44,9 +46,22 @@
               <a href="/" class="navbar-brand"><img style="max-width:100px; max-height:50px; margin-top: -16px;" src="{{ url_for('static', filename='logo_small.png')}}"></a>
           </div>
           <ul class="nav navbar-top-links navbar-right">
-              <li>
-                  <span class="badge" style="margin-top: 16px"><span id="q"><i class="fa fa-spinner fa-spin pull-left" aria-hidden="true"></i></span></span>
-               </li>
+              <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                        <i class="fa fa-power-off fa-fw"></i> <i class="fa fa-caret-down"></i>
+                    </a>
+                   <ul class="dropdown-menu dropdown-power">
+                       <li>
+                           <a href="#" onClick="document.getElementById('rebootForm').submit();"><i class="fa fa-retweet fa-fw"></i>Reboot system</a>
+                       </li>
+                        <li>
+                           <a href="#" onClick="document.getElementById('shutdownForm').submit();"><i class="fa fa-power-off fa-fw"></i>Shutdown system</a>
+                       </li>
+                   </ul>
+
+              </li>
+                  <!--<span class="badge" style="margin-top: 16px"><span id="q"><i class="fa fa-spinner fa-spin pull-left" aria-hidden="true"></i></span></span>-->
+
           </ul>
           <div class="navbar-default sidebar" role="navigation">
               <div class="sidebar-nav navbar-collapse">
