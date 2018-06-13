@@ -1,5 +1,5 @@
 from app import db, app
-
+from datetime import datetime
 
 assoc_twitter_collections = db.Table('ASSOC_TWITTER_COLLECTIONS',
     db.Column('twitter_id', db.Integer, db.ForeignKey('TWITTER.row_id'), primary_key=True),
@@ -171,6 +171,19 @@ class CRAWLLOG(db.Model):
         self.event_text = event_text
         self.event_description = event_description
         self.tag_title = tag_title
+
+    @property
+    def serialize(self):
+        """Return object data in json serializeable format"""
+        return {
+            'tag_id': self.tag_id,
+            'tag_title': self.tag_title,
+            'event_text': self.event_text,
+            'event_start': self.event_start.strftime("%Y-%m-%dT%H:%M:%S")}
+
+
+
+
 
 class SEARCH(db.Model):
     __tablename__ = 'SEARCH'

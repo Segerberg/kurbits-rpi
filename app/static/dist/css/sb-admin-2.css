@@ -68,6 +68,12 @@ body {
     min-width: 0;
 }
 
+.navbar-top-links .dropdown-events{
+    width: 410px;
+    min-width: 0;
+}
+
+
 .navbar-top-links .dropdown-messages {
     margin-left: 5px;
 }

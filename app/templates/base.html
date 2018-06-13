@@ -11,7 +11,7 @@
 
     <title>Kurbits</title>
      <!-- Font-Awesome -->
-    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.4/css/all.css" integrity="sha384-DmABxgPhJN5jlTwituIyzIUk6oqyzf3+XuP7q3VfcWA2unxgim7OSSZKKf0KSsnh" crossorigin="anonymous">
 
     <!-- Bootstrap Core CSS -->
     <link href="{{ url_for('static', filename = 'bower_components/bootstrap/dist/css/bootstrap.min.css') }}" rel="stylesheet">
@@ -22,7 +22,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/2.9.0/css/flag-icon.css" rel="stylesheet">
 
     <!-- Font-Awesome -->
-    <link href="{{ url_for('static', filename='bower_components/font-awesome/css/font-awesome.min.css') }}" rel="stylesheet">
+
     <!--<link href="{{ url_for('static', filename = 'bower_components/font-awesome/css/font-awesome.css') }}" rel="stylesheet" type="text/css">-->
     <link href="https://cdn.datatables.net/1.10.11/css/dataTables.bootstrap.min.css" media="all" rel="stylesheet" type="text/css" />
 
@@ -46,7 +46,44 @@
               <a href="/" class="navbar-brand"><img style="max-width:100px; max-height:50px; margin-top: -16px;" src="{{ url_for('static', filename='logo_small.png')}}"></a>
           </div>
           <ul class="nav navbar-top-links navbar-right">
-              <li class="dropdown">
+
+                  <!--<span class="badge" style="margin-top: 16px"><span id="q"><i class="fa fa-spinner fa-spin pull-left" aria-hidden="true"></i></span></span>-->
+            <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#" onclick="update_values();return false;">
+                        <i class="fa fa-tasks fa-fw"></i> <i class="fa fa-caret-down"></i>
+                    </a>
+                    <ul class="dropdown-menu dropdown-tasks">
+                        <li>
+                            <a href="#">
+                                <div>
+                                    <i class="fab fa-twitter fa-fw"></i> Archiving
+                                    <span class="pull-right text-muted small"> <span id="q"><i class="fa fa-spinner fa-spin pull-left" aria-hidden="true"></i></span> enqueued jobs</span>
+                                </div>
+                            </a>
+                        </li>
+                        <li class="divider"></li>
+                        <li>
+                            <a href="#">
+                                <div>
+                                    <i class="fa fa-cogs fa-fw"></i> Internal
+                                    <span class="pull-right text-muted small"> <span id="eq"><i class="fa fa-spinner fa-spin pull-left" aria-hidden="true"></i></span> enqueued jobs</span>
+                                </div>
+                            </a>
+                        </li>
+
+                    </ul>
+            </li>
+                     <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#" onclick="update_events();return false;">
+                        <i class="fa fa-bell fa-fw"></i> <i class="fa fa-caret-down"></i>
+                    </a>
+                    <ul id="eventlist" class="dropdown-menu dropdown-events">
+
+
+                    </ul>
+            </li>
+
+                <li class="dropdown">
                     <a class="dropdown-toggle" data-toggle="dropdown" href="#">
                         <i class="fa fa-power-off fa-fw"></i> <i class="fa fa-caret-down"></i>
                     </a>
@@ -54,15 +91,16 @@
                        <li>
                            <a href="#" onClick="document.getElementById('rebootForm').submit();"><i class="fa fa-retweet fa-fw"></i>Reboot system</a>
                        </li>
+                       <li class="divider"></li>
                         <li>
                            <a href="#" onClick="document.getElementById('shutdownForm').submit();"><i class="fa fa-power-off fa-fw"></i>Shutdown system</a>
                        </li>
                    </ul>
 
               </li>
-                  <!--<span class="badge" style="margin-top: 16px"><span id="q"><i class="fa fa-spinner fa-spin pull-left" aria-hidden="true"></i></span></span>-->
-
+                    <!-- /.dropdown-alerts -->
           </ul>
+
           <div class="navbar-default sidebar" role="navigation">
               <div class="sidebar-nav navbar-collapse">
                   <ul class="nav" id="side-menu">
@@ -70,7 +108,7 @@
                           <a href="/"><i class="fa fa-university fa-fw"></i>Overview</a>
                       </li>
                       <li>
-                          <a href="/twittertargets"><i class="fa fa-twitter fa-fw"></i>Twitter<span class="fa arrow"></span></a>
+                          <a href="/twittertargets"><i class="fab fa-twitter fa-fw"></i>Twitter<span class="fa arrow"></span></a>
                           <ul class="nav nav-second-level">
                               <li>
                                   <a href="/twittertargets/1"><i class="fa fa-user fa-fw"></i>User Timelines</a>
@@ -82,12 +120,9 @@
                                   <a href="/collections/1"><i class="fa fa-archive fa-fw"></i>Collections</a>
                               </li>
                               <li>
-                                  <a href="/twittertrends"><i class="fa fa-line-chart fa-fw"></i>Trends</a>
+                                  <a href="/twittertrends"><i class="fas fa-chart-line fa-fw"></i>Trends</a>
                               </li>
                           </ul>
-                      </li>
-                      <li>
-                          <a href="#"><i class="fa fa-wrench fa-fw"></i>Tools</a>
                       </li>
                       <li>
                           <a href="/settings"><i class="fa fa-cogs fa-fw"></i>System</a>
@@ -131,21 +166,55 @@
                     <script src="{{ url_for('static', filename = 'js/raphael-2.1.4.min.js') }}"></script>
                     <script  src="{{ url_for('static', filename = 'js/jquery.tablesorter.min.js') }}"></script>
                     {% block content %}
+
                     {% endblock %}
+
+
                   <script  src="{{ url_for('static', filename = 'dist/js/save_panel_state.js') }}"></script>
+                  <script  src="{{ url_for('static', filename = 'js/moment-with-locales.js') }}"></script>
               </div>
           </div>
       </div>
+
   </div>
       <script>
       function update_values() {
       $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
       $.getJSON($SCRIPT_ROOT+"/_qmonitor",
       function(data) {
-      $("#q").text(data.qlen)
+      $("#q").text(data.qlen);
+      $("#eq").text(data.eqlen);
       });
       }
     setInterval(update_values, 3000)
       </script>
+
+ <script>
+      function update_events() {
+
+      $('.eventL').empty().hide()
+      $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+      $.getJSON($SCRIPT_ROOT+"/_emonitor",
+      function(data) {  for (var i = 0, len = data.json_list.length; i < len; i++) {
+       console.log(data.json_list[i]);
+       var utcTime = moment.utc(new Date(data.json_list[i].event_start));
+       var since = moment.utc(utcTime).fromNow();
+       var target = data.json_list[i].tag_title;
+        $("#eventlist").append($('<li class="eventL"><div>&nbsp;&nbsp<i class="fab fa-twitter fa-fw"></i> '
+        +data.json_list[i].tag_title+' ['
+
+        +data.json_list[i].event_text+']</i><span class="pull-right text-muted small">'
+        +since+'&nbsp;&nbsp;</span><div></li><li class="divider eventL"></li>').hide().fadeIn(500, function() {
+
+
+}));
+
+        }
+
+      });
+      }
+
+      </script>
+
   </body>
 </html>

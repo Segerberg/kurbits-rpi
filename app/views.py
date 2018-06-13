@@ -138,7 +138,7 @@ def twittertargets(page=1):
                                        added=datetime.now(), woeid=None, index=form.index.data, schedule=None, scheduleInterval=None, scheduleText = None,
                                        ia_uri=None, ia_cap_count=0, ia_cap_date=None)
 
-            addLog = models.CRAWLLOG(tag_title=form.title.data,event_start=datetime.now(), event_text='Target added',event_description=None)
+            addLog = models.CRAWLLOG(tag_title=form.title.data,event_start=datetime.utcnow(), event_text='Target added',event_description=None)
             addTarget.logs.append(addLog)
             db.session.add(addTarget)
             db.session.commit()
@@ -824,7 +824,14 @@ def startTwitterCrawl(id):
 @app.route('/_qmonitor', methods=['GET', 'POST'])
 def qmonitor():
 
-    return jsonify(qlen=len(q))
+    return jsonify(qlen=len(q),eqlen=len(eq))
+
+"""Route to monitor if job is in queue"""
+@app.route('/_emonitor', methods=['GET', 'POST'])
+def emonitor():
+    json_list = [i.serialize for i in models.CRAWLLOG.query.order_by(models.CRAWLLOG.row_id.desc()).limit(10).all()]
+
+    return jsonify(json_list=json_list)
 
 '''
 Route to call collection twarc-archive
