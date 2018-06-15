@@ -43,7 +43,7 @@
                     <li><b style="color:grey">End Date</b>{% if object.inclDateEnd != None %} {{ object.inclDateEnd.strftime('%Y-%m-%d')}}{% else %} - {% endif %}</li>
                 {% if object.schedule != None %}<h5><span class="label label-default">Schedule</span></h5>
                      <li><b style="color:grey">Runs: </b> {{ object.scheduleText }}  </li>
-                    <li><b style="color:grey">Next Run: </b><span id="counter"></span> <span style="color:grey">({{ object.nextRun.strftime('%Y-%m-%d %H:%M') }})</span></li>
+                   {% if object.nextRun %} <li><b style="color:grey">Next Run: </b><span id="counter"></span> <span style="color:grey">({{ object.nextRun.strftime('%Y-%m-%d %H:%M') }})</span></li> {% endif %}
                     <li><a href="{{ url_for('dropSchedule', id=object.row_id) }}" class="btn btn-danger btn-xs" role="button" onclick="return confirm('Are you sure you want to remove schedule?');" ><i class="fa fa-ban fa-fw"></i> Remove</a></li>
 
 
@@ -239,7 +239,7 @@
     <div class="col-lg-6">
         <div class="panel panel-default">
             <div class="panel-heading">
-                <div class="panel-title pull-left"><a data-toggle="collapse" href="#collapse2"><i class="fa fa-crosshairs fa-fw"></i>Associated Targets</a></div>
+                <div class="panel-title pull-left"><a data-toggle="collapse" href="#collapse2"><i class="fa fa-crosshairs fa-fw"></i> Associated Targets</a></div>
                 <div class="btn-group pull-right">
                     <button type="button" class="btn btn-primary btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Add New <span class="caret"></span></button>
                     <ul class="dropdown-menu">
@@ -309,7 +309,7 @@
                                     <li><a href="{{ url_for('wordc', id=object.row_id) }}"><i class="fa fa-cloud fa-fw"></i> Wordcloud</a></li>
                     <li><a href="{{ url_for('hash', id=object.row_id) }}"><i class="fa fa-hashtag fa-fw"></i> Hashtags</a></li>
                     <li><a href="{{ url_for('top_users', id=object.row_id) }}"><i class="fa fa-user fa-fw"></i> Top Users</a></li>
-                    <li><a href="{{ url_for('urls', id=object.row_id) }}"><i class="fa fa-cloud fa-fw"></i>Urls</a></li>
+                    <li><a href="{{ url_for('urls', id=object.row_id) }}"><i class="fa fa-cloud fa-fw"></i> Urls</a></li>
                         <li><a href="{{ url_for('t_csv', id=object.row_id) }}"><i class="fa fa-file fa-fw"></i> CSV</a></li>
 
                     </ul>
@@ -321,9 +321,9 @@
                      <thead>
                      <tr>
                          <th><i class="fa fa-download fa-fw"></i> Export</th>
-                         <th><i class="fa fa-clock-o fa-fw"></i>Time</th>
-                         <th><i class="fa fa-rocket fa-fw"></i>Actions</th>
-                         <th><i class="fa fa-twitter fa-fw"></i>Tweets</th>
+                         <th><i class="fas fa-clock fa-fw"></i> Time</th>
+                         <th><i class="fa fa-rocket fa-fw"></i> Actions</th>
+                         <th><i class="fab fa-twitter fa-fw"></i> Tweets</th>
 
                      </tr>
                      </thead>

@@ -22,9 +22,9 @@
                      <thead>
 
                      <tr>
-                         <th><i class="fa fa-twitter fa-fw"></i> Tweet</th>
-                         <th><i class="fa fa-clock-o fa-fw"></i> Last Capture</th>
-                         <th><i class="fa fa-sign-in fa-fw"></i> Captures</th>
+                         <th><i class="fab fa-twitter fa-fw"></i> Tweet</th>
+                         <th><i class="fas fa-clock fa-fw"></i> Last Capture</th>
+                         <th><i class="fas fa-sign-in-alt fa-fw"></i> Captures</th>
                          <th><i class="fa fa-rocket fa-fw"></i> Actions</th>
 
 
@@ -39,7 +39,7 @@
                          <td>{{result.ia_cap_date.strftime('%Y-%m-%d %H:%M')}}</td>
                      <td>{{result.ia_cap_count}}</td>
 
-                         <td><a href="{{ url_for('IA_Push', id=result.row_id, type='tweet')}}" class="btn btn-default btn-xs"><i class="fa fa-sign-in fa-fw"></i>Push</a></td>
+                         <td><a href="{{ url_for('IA_Push', id=result.row_id, type='tweet')}}" class="btn btn-default btn-xs"><i class="fas fa-sign-in-alt fa-fw"></i>Push</a></td>
                      </tr>
                      {% endfor %}
                      </tbody>

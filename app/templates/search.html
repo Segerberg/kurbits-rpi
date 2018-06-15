@@ -9,7 +9,7 @@ article.tweet {
       margin: 10px;
       width: 270px;
       padding: 10px;
-      height: 220px;
+      height: 400px;
     }
 
     .name {
@@ -57,18 +57,18 @@ $('.twitter').tweetify();
 </script>
 {% endblock %}
 
-{% block pageHeader %}SÖK {% endblock %}
+{% block pageHeader %}Results {% endblock %}
 
 {% block content %}
 <!--Search bar-->
 <div class="row" style="margin-top:20px;">
-    {{ form.hidden_tag() }}
+    {{ g.search_form.hidden_tag() }}
     <div class="col-md-10 ">
         <form class="form" method="post" action="{{ url_for('search') }}" role="search">
             <div class="input-group">
-                {{form.search(class="form-control",id="search")}}
+                {{g.search_form.search(class="form-control",id="search")}}
                 <span class="input-group-btn">
-                    <button class="btn btn-primary" type="submit">Sök!</button>
+                    <button class="btn btn-primary" type="submit">Search!</button>
                 </span>
             </div>
         </form>
@@ -85,9 +85,10 @@ $('.twitter').tweetify();
      <footer>
          <i class="fa fa-retweet fa-fw" ></i>{{result.retweets}}<br>
          <a href="#"><time>{{result.created_at}}</time></a>
-          {% if not result.ia_uri %}<a href="{{ url_for('IA_Push', id=result.row_id, type='tweet')}}"><i class="fa fa-sign-in fa-fw"></i>Push to Internet Archive</a>
+         <hr>
+          {% if not result.ia_uri %}<a href="{{ url_for('IA_Push', id=result.row_id, type='tweet')}}"><i class="fas fa-sign-in-alt fa-fw"></i>Push to Internet Archive</a>
         {% else %}
-        <a href="{{ url_for('IA_Push', id=result.row_id, type='tweet')}}"><i class="fa fa-sign-in fa-fw"></i>Push to Internet Archive</a>
+        <a href="{{ url_for('IA_Push', id=result.row_id, type='tweet')}}"><i class="fas fa-sign-in-alt fa-fw"></i>Push to Internet Archive</a>
         <br>
         <a href="{{result.ia_uri}}"><i class="fa fa-eye fa-fw"></i>View in Internet Archive</a> ({{result.ia_cap_count}} Captures)
         {% endif %}

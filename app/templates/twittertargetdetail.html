@@ -17,13 +17,13 @@
     <div class="col-lg-12">
         <div class="panel panel-default">
             <div class="panel-heading">
-                <i class="fa fa-twitter fa-fw"></i> Description
+                <i class="fab fa-twitter fa-fw"></i> Description
 
                 <div class="btn-group pull-right">
                      <button type="button" class="btn btn-primary btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Actions <span class="caret"></span></button>
                      <ul class="dropdown-menu">
                          <li><a href="{{ url_for('startTwitterCrawl', id=TWITTER.row_id) }}"><i class="fa fa-download fa-fw"></i> Archive</a></li>
-                         <li><a data-toggle="modal" href="#myModal" data-target="#myModal"><i class="fa fa-pencil fa-fw"></i> Edit</a></li>
+                         <li><a data-toggle="modal" href="#myModal" data-target="#myModal"><i class="fas fa-pencil-alt fa-fw"></i> Edit</a></li>
                          <li role="separator" class="divider"></li>
                          <li><a href="{{ url_for('removeTwitterTarget', id=TWITTER.row_id) }}" onclick="return confirm('Are you sure you want to delete?')"><i class="fa fa-trash fa-fw"></i> Delete</a></li>
                      </ul>
@@ -84,7 +84,7 @@
                         <div class="modal-content">
                             <div class="modal-header">
                                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                                <h4 class="modal-title" id="myModalLabel"><i class="fa fa-pencil" aria-hidden="true"></i>EDIT</h4>
+                                <h4 class="modal-title" id="myModalLabel"><i class="fas fa-pencil-alt" aria-hidden="true"></i>EDIT</h4>
                             </div>
                             <div class="modal-body">
                                 <div class="form-group">
@@ -219,9 +219,9 @@
                      <thead>
                      <tr>
                          <th><i class="fa fa-download fa-fw"></i> Export</th>
-                         <th><i class="fa fa-clock-o fa-fw"></i>Time</th>
-                         <th><i class="fa fa-rocket fa-fw"></i>Actions</th>
-                         <th><i class="fa fa-twitter fa-fw"></i>No</th>
+                         <th><i class="fas fa-clock fa-fw"></i> Time</th>
+                         <th><i class="fa fa-rocket fa-fw"></i> Actions</th>
+                         <th><i class="fab fa-twitter fa-fw"></i> No</th>
                      </tr>
                      </thead>
                      <tbody>
@@ -258,7 +258,7 @@
                      <button type="button" class="btn btn-primary btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Actions <span class="caret"></span></button>
                      <ul class="dropdown-menu">
 
-                        <li><a href="{{ url_for('IA_Push', type='timeline',id=TWITTER.row_id) }}"><i class="fa fa-sign-in fa-fw"></i> Push Timline</a></li>
+                        <li><a href="{{ url_for('IA_Push', type='timeline',id=TWITTER.row_id) }}"><i class="fas fa-sign-in-alt fa-fw"></i> Push Timline</a></li>
                      </ul>
                  </div>
                  {% endif %}
@@ -289,11 +289,11 @@
                      <thead>
                      <h5><span class="label label-default">Tweet captures</span></h5>
                      <tr> {% if TWITTER.targetType == 'Search' %}
-                         <th><i class="fa fa-twitter fa-fw"></i> User</th>
+                         <th><i class="fab fa-twitter fa-fw"></i> User</th>
                          {% endif %}
-                         <th><i class="fa fa-twitter fa-fw"></i> Tweet</th>
-                         <th><i class="fa fa-clock-o fa-fw"></i> Last Capture</th>
-                         <th><i class="fa fa-sign-in fa-fw"></i> Captures</th>
+                         <th><i class="fab fa-twitter fa-fw"></i> Tweet</th>
+                         <th><i class="fas fa-clock fa-fw"></i> Last Capture</th>
+                         <th><i class="fas fa-sign-in-alt fa-fw"></i> Captures</th>
                          <th><i class="fa fa-rocket fa-fw"></i> Actions</th>
 
 
@@ -310,7 +310,7 @@
                          <td>{{ia.ia_cap_date.strftime('%Y-%m-%d %H:%M')}}</td>
                      <td>{{ia.ia_cap_count}}</td>
 
-                         <td><a href="{{ url_for('IA_Push', id=ia.row_id, type='tweet')}}" class="btn btn-default btn-xs"><i class="fa fa-sign-in fa-fw"></i>Push</a></td>
+                         <td><a href="{{ url_for('IA_Push', id=ia.row_id, type='tweet')}}" class="btn btn-default btn-xs"><i class="fas fa-sign-in-alt fa-fw"></i>Push</a></td>
                      </tr>
                      {% endfor %}
                       {% else %}
@@ -341,7 +341,7 @@
      <div class="col-lg-6">
          <div class="panel panel-default">
              <div class="panel-heading"><a data-toggle="collapse" href="#collapse1">
-                 <i class="fa fa-book fa-fw"></i> EVENT LOG </a>
+                 <i class="fas fa-book fa-fw"></i> EVENT LOG </a>
              </div>
              <div class="panel-body">
                  <div id="collapse1" class="panel-collapse collapse in">
@@ -373,7 +373,7 @@
       <div class="col-lg-6">
          <div class="panel panel-default">
              <div class="panel-heading"><a data-toggle="collapse" href="#collapse6">
-                 <i class="fa fa-book fa-fw"></i> Files</a>
+                 <i class="fas fa-file fa-fw"></i> Files</a>
              </div>
              <div class="panel-body">
                  <div id="collapse6" class="panel-collapse collapse in">

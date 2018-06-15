@@ -13,7 +13,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                    <h4 class="modal-title" id="myModalLabel"><i class="fa fa-pencil" aria-hidden="true"></i> Add User</h4>
+                    <h4 class="modal-title" id="myModalLabel"><i class="fas fa-pencil" aria-hidden="true"></i> Add User</h4>
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
@@ -94,9 +94,9 @@
         <i class="fa fa-retweet fa-fw" ></i>{{result.retweets}}<br>
         <a href="#"><time>{{result.created_at}}</time></a>
 <hr>
-    {% if not result.ia_uri %}<a href="{{ url_for('IA_Push', id=result.row_id, type='tweet')}}"><i class="fa fa-sign-in fa-fw"></i>Push to Internet Archive</a>
+    {% if not result.ia_uri %}<a href="{{ url_for('IA_Push', id=result.row_id, type='tweet')}}"><i class="fas fa-sign-in-alt fa-fw"></i>Push to Internet Archive</a>
         {% else %}
-        <a href="{{ url_for('IA_Push', id=result.row_id, type='tweet')}}"><i class="fa fa-sign-in fa-fw"></i>Push to Internet Archive</a>
+        <a href="{{ url_for('IA_Push', id=result.row_id, type='tweet')}}"><i class="fas fa-sign-in-alt fa-fw"></i>Push to Internet Archive</a>
         <br>
         <a target="_blank" href="{{result.ia_uri}}"><i class="fa fa-eye fa-fw"></i>View in Internet Archive</a> ({{result.ia_cap_count}} Captures)
         {% endif %}
