@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% block pageHeader %}
+<i class="fa fa-book fa-fw"></i> VOCABULARIES
+
+{% endblock %}
+
+{% block content %}
+
+
+<div class="col-lg-4">
+<div class="panel panel-default">
+        <div class="panel-heading"><a data-toggle="collapse" href="#collapse">
+            <i class="fas fa-hand-paper fa-fw"></i> Stop Words</a>
+        </div>
+        <div id="collapse" class="panel-collapse collapse in">
+            <div class="panel-body">
+                <form class="form" method="post" action="{{ url_for('settings') }}" role="search">
+                    {{ stopForm.hidden_tag() }}
+            <div class="input-group">
+                {{stopForm.stopWord(class="form-control",id="stopWordInput",placeholder="Filter stop words...", onkeyup="filterTable()")}}
+
+                <span class="input-group-btn">
+                    <button class="btn btn-primary" type="submit"><i class="fa fa-plus fa-fw"></i>Add</button>
+                </span>
+            </div>
+        </form>
+<br>
+                <button type="button" class="btn btn-primary btn-xs pull-right" data-toggle="collapse" data-target="#demo">Batch upload</button>
+  <br>
+   <div id="demo" class="collapse in">
+       <br>
+ <form method=post action="{{ url_for('uploadStopWords')}}" enctype=multipart/form-data>
+     <div class="input-group">
+          <span class="input-group-btn">
+      <input type=file name=file>
+
+          <button class="btn btn-default btn-xs"type="submit">Upload!</i></button>
+          </span>
+     </div>
+    </form>
+   </div>
+<br>
+                <table id="stopWordTable" class="table table-bordered">
+                        <tr>
+                            <th>Word</th>
+                            <th>Action</th>
+                        </tr>
+                    {% for w in stopWords %}
+                    <tr>
+                        <td>{{w.stop_word}}</td>
+                        <td><a href="{{ url_for('removestopword', id=w.row_id) }}"><i class="fa fa-trash fa-fw"></i></a></td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+</div>
+</div>
+
+
+
+<div class="col-lg-4">
+    <div class="panel panel-default">
+        <div class="panel-heading"><a data-toggle="collapse" href="#collapse6">
+            <i class="fa fa-eye-slash fa-fw"></i> Silenced Trends</a>
+        </div>
+        <div id="collapse6" class="panel-collapse collapse in">
+            <div class="panel-body">
+                <div class="list-group">
+                     {% for trend in silencedTrends %}
+                    <span class="list-group-item">{{trend.name}} <a href="{{ url_for('silenceTrend', id=trend.row_id) }}" class="btn btn-success btn-xs pull-right" role="button" ><i class="fa fa-eye fa-fw"></i></a></span>
+
+                    {% endfor %}
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="col-lg-4">
+    <div class="panel panel-default">
+        <div class="panel-heading"><a data-toggle="collapse" href="#collapse7">
+            <i class="fa fa-archive fa-fw"></i> Collection Types</a>
+        </div>
+        <div id="collapse7" class="panel-collapse collapse in">
+            <div class="panel-body">
+                       <form class="form" method="post" action="{{ url_for('alterCollectionType', id=1, type='add') }}" role="search">
+                    {{ typeForm.hidden_tag() }}
+            <div class="input-group">
+                {{typeForm.type(class="form-control",id="collectionTypeInput",placeholder="Add type...")}}
+
+                <span class="input-group-btn">
+                    <button class="btn btn-primary" type="submit"><i class="fa fa-plus fa-fw"></i>Add</button>
+                </span>
+            </div>
+        </form>
+                <hr>
+                <div class="list-group">
+                     {% for type in collectionTypes %}
+                    <span class="list-group-item">{{type.term}} <a href="{{ url_for('alterCollectionType', id=type.row_id, type='delete') }}" class="btn btn-danger btn-xs pull-right" role="button" ><i class="fa fa-trash fa-fw"></i></a></span>
+
+                    {% endfor %}
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+    </div>
+
+
+
+
+<div class="col-lg-4">
+    <div class="panel panel-default">
+        <div class="panel-heading"><a data-toggle="collapse" href="#collapse8">
+            <i class="fa fa-globe fa-fw"></i> Language Codes</a>
+        </div>
+        <div id="collapse8" class="panel-collapse collapse in">
+            <div class="panel-body">
+                       <form class="form" method="post" action="{{ url_for('alterLangCode', id=1, type='add') }}" role="search">
+                    {{ langForm.hidden_tag() }}
+            <div class="input-group">
+                {{langForm.type(class="form-control",id="langcodeTypeInput",placeholder="Add language code...")}}
+
+                <span class="input-group-btn">
+                    <button class="btn btn-primary" type="submit"><i class="fa fa-plus fa-fw"></i>Add</button>
+                </span>
+            </div>
+        </form>
+                <hr>
+                <div class="list-group">
+                     {% for code in langcodes %}
+                    {% if code.term == 'all' %}
+                    {% else %}
+                    <span class="list-group-item">{{code.term}} <a href="{{ url_for('alterLangCode', id=code.row_id, type='delete') }}" class="btn btn-danger btn-xs pull-right" role="button" ><i class="fa fa-trash fa-fw"></i></a></span>
+                    {% endif %}
+                    {% endfor %}
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<script>$('.collapse').collapse()</script>
+
+<script>
+function filterTable() {
+  var input, filter, table, tr, td, i;
+  input = document.getElementById("stopWordInput");
+  filter = input.value.toUpperCase();
+  table = document.getElementById("stopWordTable");
+  tr = table.getElementsByTagName("tr");
+  for (i = 0; i < tr.length; i++) {
+    td = tr[i].getElementsByTagName("td")[0];
+    if (td) {
+      if (td.innerHTML.toUpperCase().indexOf(filter) > -1) {
+        tr[i].style.display = "";
+      } else {
+        tr[i].style.display = "none";
+      }
+    }
+  }
+}
+</script>
+
+
+{% endblock %}
+

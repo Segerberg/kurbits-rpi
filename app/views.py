@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from app import app, render_template, request,db, url_for, redirect,flash,Response,jsonify, send_from_directory
+from app import app, render_template, request,db, url_for, redirect,flash,Response,jsonify, send_from_directory,g
 from app import models
 from .forms import twitterTargetForm, twitterTargetUserForm, SearchForm, twitterCollectionForm, collectionAddForm, twitterTrendForm, stopWordsForm, scheduleForm,SCHEDULE_CHOICES, passwordForm, collectionTypeForm, langCodeForm, networkForm,credForm
 from sqlalchemy.exc import IntegrityError
@@ -31,7 +31,7 @@ import sqlalchemy
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 import subprocess
 from .decorators import async
-from .scripts import humansize, delIndex, vac
+from .scripts import humansize, delIndex, vac, backup_db
 auth = HTTPBasicAuth()
 q = Queue(connection=Redis())
 eq = Queue('internal',connection=Redis())
@@ -68,8 +68,8 @@ def before_first_request():
 
 @app.before_request
 def before_request():
-    print('aaa')
-        #search_form = SearchForm()
+        g.search_form = SearchForm()
+
 
 
 def queryUser():
@@ -92,30 +92,30 @@ def index():
     collectionCount = models.COLLECTION.query.filter(models.COLLECTION.status=='1').count()
     trendsCount = db.session.query(models.TRENDS_LOC).count()
     CRAWLLOG = models.CRAWLLOG.query.order_by(models.CRAWLLOG.row_id.desc()).limit(10).all()
-    form = SearchForm()
+    search_form = SearchForm()
     if request.method == 'POST':
-        return redirect((url_for('search_results', form=form, query=form.search.data)))
+        return redirect((url_for('search_results', form=search_form, query=search_form.search.data)))
 
-    return render_template("index.html", twitterUserCount=twitterUserCount, twitterSearchCount=twitterSearchCount, collectionCount=collectionCount,trendsCount=trendsCount, CRAWLLOG=CRAWLLOG,  qlen=len(q), form=form, auth=auth.username())
+    return render_template("index.html", twitterUserCount=twitterUserCount, twitterSearchCount=twitterSearchCount, collectionCount=collectionCount,trendsCount=trendsCount, CRAWLLOG=CRAWLLOG,  qlen=len(q), search_form=search_form, auth=auth.username())
 
 
 '''SEARCH'''
 @app.route('/search', methods=['GET', 'POST'])
 @auth.login_required
 def search():
-    form =SearchForm()
+    search_form =SearchForm()
     if request.method == 'POST':
-        return redirect((url_for('search_results', form=form, query=form.search.data, page=1)))
-    return render_template("search.html", form=form)
+        return redirect((url_for('search_results', search_form=search_form, query=search_form.search.data, page=1)))
+    return render_template("search.html", search_form=search_form)
 
 
 '''SEARCH RESULTS'''
 @app.route('/search/<query>/<int:page>', methods=['GET', 'POST'])
 @auth.login_required
 def search_results(query,page=1):
-    form = SearchForm()
+    search_form = SearchForm()
     results = models.SEARCH.query.filter(models.SEARCH.text.like(u'%{}%'.format(query))).paginate(page, POSTS_PER_PAGE, False)
-    return render_template('search.html', query=query, results=results,form=form)
+    return render_template('search.html', query=query, results=results,search_form=search_form)
 
 '''
 TWITTER
@@ -168,7 +168,7 @@ def twittertargetsclosed(page=1):
                                        added=datetime.now(), woeid=None, index=form.index.data, schedule=None, scheduleInterval=None, scheduleText = None,
                                        ia_uri=None,ia_cap_count=0, ia_cap_date=None)
 
-            addLog = models.CRAWLLOG(tag_title=form.title.data,event_start=datetime.now(), event_text='Target added',event_description=None)
+            addLog = models.CRAWLLOG(tag_title=form.title.data,event_start=datetime.utcnow(), event_text='Target added',event_description=None)
             addTarget.logs.append(addLog)
             db.session.add(addTarget)
             db.session.commit()
@@ -226,7 +226,7 @@ def addtwittertrend(id):
                                    schedule=None, scheduleInterval=None, scheduleText = None,
                                    ia_uri=None,ia_cap_count=0,ia_cap_date=None)
 
-        addLog = models.CRAWLLOG(tag_title=id, event_start=datetime.now(), event_text='Target added',event_description=None)
+        addLog = models.CRAWLLOG(tag_title=id, event_start=datetime.utcnow(), event_text='Target added',event_description=None)
         for t in trendAll:
             if t.name == id:
                 t.saved= True
@@ -266,7 +266,7 @@ def deleteTrendLocation(id):
 @app.route('/silencetrend/<id>', methods=['GET', 'POST'])
 @auth.login_required
 def silenceTrend(id):
-    if '/settings' in request.referrer:
+    if '/vocabs' in request.referrer:
         trend = models.TWITTER_TRENDS.query.get_or_404(id)
         trend.silence = False
         db.session.commit()
@@ -352,7 +352,7 @@ def twittersearchtargets(page=1):
                                        added=datetime.now(), woeid=None, index=form.index.data,
                                        schedule=None, scheduleInterval=None, scheduleText = None,
                                        ia_uri=None,ia_cap_count=0,ia_cap_date=None)
-            addLog = models.CRAWLLOG(tag_title=form.title.data, event_start=datetime.now(), event_text='Target added',event_description=None)
+            addLog = models.CRAWLLOG(tag_title=form.title.data, event_start=datetime.utcnow(), event_text='Target added',event_description=None)
             addTarget.logs.append(addLog)
             db.session.add(addTarget)
             db.session.commit()
@@ -507,6 +507,7 @@ def searchlist(id, page=1):
 @app.route('/twittertargetsdetail/<id>', methods=['GET', 'POST'])
 @auth.login_required
 def twittertargetDetail(id):
+
     TWITTER = models.TWITTER.query.filter(models.TWITTER.row_id == id).first()
     object = models.TWITTER.query.get_or_404(id)
     CRAWLLOG = models.CRAWLLOG.query.order_by(models.CRAWLLOG.event_start.desc()).filter(models.CRAWLLOG.tag_id==id).limit(100)
@@ -593,7 +594,7 @@ def twittertargetDetail(id):
             flash(u'Twitter user account already in database ', 'danger')
             db.session.rollback()
 
-        return redirect(url_for('twittertargetDetail', id=id))
+        return redirect(url_for('twittertargetDetail', id=id, ref=ref))
 
     return render_template("twittertargetdetail.html", TWITTER=TWITTER, fileList = sortedFilelist, form=form, userForm=userForm,netForm=netForm, CRAWLLOG=CRAWLLOG, EXPORTS=EXPORTS, SEARCH = SEARCH, SEARCH_SEARCH=SEARCH_SEARCH,linkedCollections=linkedCollections, assForm=assForm, l=l, ref = request.referrer)
 
@@ -811,7 +812,7 @@ def startTwitterCrawl(id):
     with app.app_context():
 
         last_crawl = models.TWITTER.query.get(id)
-        last_crawl.lastCrawl = datetime.now()
+        last_crawl.lastCrawl = datetime.utcnow()
         db.session.commit()
         db.session.close()
         flash(u'Archiving started!',  'success')
@@ -1036,21 +1037,12 @@ def deleteexport(filename):
     db.session.close()
     return redirect(request.referrer)
 
-
-
-'''SETTINGS ROUTE'''
-@app.route('/settings', methods=['GET', 'POST'])
+'''CREDENIALS SETTINGS ROUTE'''
+@app.route('/credentials', methods=['GET', 'POST'])
 @auth.login_required
-def settings():
-    stopWords = models.STOPWORDS.query.all()
-    stopForm = stopWordsForm()
-    passForm = passwordForm()
-    typeForm = collectionTypeForm()
-    langForm = langCodeForm()
+def credentials():
     credentialForm = credForm()
-    silencedTrends = models.TWITTER_TRENDS.query.filter(models.TWITTER_TRENDS.silence == True).order_by(models.TWITTER_TRENDS.name.asc()).all()
-    collectionTypes = models.VOCABS.query.filter(models.VOCABS.use=='collectionType').order_by(models.VOCABS.term.asc()).all()
-    langcodes = models.VOCABS.query.filter(models.VOCABS.use == 'langcode').order_by(models.VOCABS.term.asc()).all()
+    passForm = passwordForm()
     credentials = models.CREDENTIALS.query.all()
 
     if request.method == 'POST' and passForm.validate_on_submit():
@@ -1069,6 +1061,19 @@ def settings():
         flash(u'Added Twitter Credentials'.format(credentialForm.name.data), 'success')
         return redirect(request.referrer)
 
+    return render_template("credentials_settings.html", credentials=credentials, credentialForm=credentialForm, passForm=passForm)
+
+'''VOCABS SETTINGS ROUTE'''
+@app.route('/vocabs', methods=['GET', 'POST'])
+@auth.login_required
+def vocabs():
+    stopWords = models.STOPWORDS.query.all()
+    stopForm = stopWordsForm()
+    typeForm = collectionTypeForm()
+    langForm = langCodeForm()
+    silencedTrends = models.TWITTER_TRENDS.query.filter(models.TWITTER_TRENDS.silence == True).order_by(models.TWITTER_TRENDS.name.asc()).all()
+    collectionTypes = models.VOCABS.query.filter(models.VOCABS.use == 'collectionType').order_by(models.VOCABS.term.asc()).all()
+    langcodes = models.VOCABS.query.filter(models.VOCABS.use == 'langcode').order_by(models.VOCABS.term.asc()).all()
 
     if request.method == 'POST' and stopForm.validate_on_submit():
 
@@ -1077,19 +1082,30 @@ def settings():
         db.session.commit()
         flash(u'{} was added to Stop word list!'.format(stopForm.stopWord.data), 'success')
         return redirect(request.referrer)
+    return render_template("vocab_settings.html", collectionTypes=collectionTypes, stopWords=stopWords,
+                           stopForm=stopForm,  typeForm=typeForm, langForm=langForm, langcodes=langcodes,silencedTrends = silencedTrends)
+
+
+'''DB / STORAGE SETTINGS ROUTE'''
+@app.route('/dbstorage', methods=['GET', 'POST'])
+@auth.login_required
+def dbstorage():
     diskList = []
-
-    #DISKS
     for mountPoint in psutil.disk_partitions():
-        x = dict(p=psutil.disk_usage(mountPoint[1])[3], n=mountPoint[0],m=mountPoint[1], f=str(psutil.disk_usage(mountPoint[1])[2]/ (1024.0 ** 3)))
-        print (x)
-        print (mountPoint[1])
+        x = dict(p=psutil.disk_usage(mountPoint[1])[3], n=mountPoint[0], m=mountPoint[1],
+                 f=str(psutil.disk_usage(mountPoint[1])[2] / (1024.0 ** 3)))
+        print(x)
+        print(mountPoint[1])
         diskList.append(x)
+    return render_template("db_storage_settings.html",diskList=diskList)
 
-    #REDIS
+'''DB / STORAGE SETTINGS ROUTE'''
+@app.route('/workersqueues', methods=['GET', 'POST'])
+@auth.login_required
+def workers_queues():
     workers = Worker.all(connection=Redis())
+    return render_template("workers_queues_settings.html",workers=workers,qlen=len(q),intqlen=len(eq))
 
-    return render_template("settings.html", credentials = credentials, credentialForm = credentialForm, collectionTypes = collectionTypes ,stopWords = stopWords, stopForm = stopForm, passForm = passForm, diskList=diskList, workers=workers,qlen=len(q),intqlen=len(eq), silencedTrends = silencedTrends, typeForm=typeForm,langForm=langForm,langcodes=langcodes)
 
 
 '''Route to remove credential'''
@@ -1152,13 +1168,20 @@ def uploadStopWords():
 @app.route('/deleteindex', methods=['GET','POST'])
 def deleteIndex():
     eq.enqueue(delIndex)
-    return redirect(url_for('settings'))
+    return redirect(request.referrer)
 
 @auth.login_required
 @app.route('/vaccum', methods=['GET','POST'])
 def vaccum():
     eq.enqueue(vac)
-    return redirect(url_for('settings'))
+    return redirect(request.referrer)
+
+@auth.login_required
+@app.route('/backup_db', methods=['GET','POST'])
+def backupDB():
+    eq.enqueue(backup_db)
+    flash(u'Backing up database', 'success')
+    return redirect(request.referrer)
 
 @auth.login_required
 @app.route('/reboot', methods=['GET','POST'])
@@ -1195,7 +1218,7 @@ def clearQueue(type):
     elif type == 'archive':
         q.empty()
 
-    return redirect(url_for('settings'))
+    return redirect(request.referrer)
 
 @auth.login_required
 @app.route('/dropSchedule/<id>', methods=['GET','POST'])

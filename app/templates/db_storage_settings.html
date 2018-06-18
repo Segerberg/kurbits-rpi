@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block pageHeader %}
+<i class="fa fa-database fa-fw"></i> DATABASE/STORAGE
+
+{% endblock %}
+
+{% block content %}
+
+    <div class="col-lg-4">
+    <div class="panel panel-default">
+        <div class="panel-heading"><a data-toggle="collapse" href="#collapse10">
+            <i class="fa fa-database fa-fw"></i> Database Maintenance</a>
+        </div>
+        <div id="collapse10" class="panel-collapse collapse in">
+            <div class="panel-body">
+
+                <div class="list-group">
+                    <span class="list-group-item">Vaccum<a href="{{ url_for('vaccum')}}" class="btn btn-danger btn-xs pull-right" role="button" ><i class="fa fa-arrow-circle-right fa-fw"></i></a></span>
+
+                </div>
+                <div class="list-group">
+                    <span class="list-group-item">Delete Index<a href="{{ url_for('deleteIndex')}}" class="btn btn-danger btn-xs pull-right" role="button" ><i class="fa fa-arrow-circle-right fa-fw"></i></a></span>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<div class="col-lg-4">
+    <div class="panel panel-default">
+        <div class="panel-heading"><a data-toggle="collapse" href="#collapse2">
+            <i class="fa fa-database fa-fw"></i> Storage</a>
+        </div>
+        <div id="collapse2" class="panel-collapse collapse in">
+            <div class="panel-body">
+ {% for l in diskList %}
+   <div class="progress">
+       {% if l.p <= 60 %}
+<div class="progress-bar progress-bar-success" role="progressbar" style="width:{{ l.p }}%;color:black;">
+       {% elif l.p <= 80 %}
+  <div class="progress-bar progress-bar-warning" role="progressbar" style="width:{{ l.p }}%;color:black;">
+       {% else %}
+      <div class="progress-bar progress-bar-danger" role="progressbar" style="width:{{ l.p }}%;color:black;">
+   {% endif %}
+{{ l.n }}      ({{l.f[:5]}} GB free)
+          </div>
+
+      </div>
+          {% endfor %}
+
+
+</div>
+   </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>$('.collapse').collapse()</script>
+{% endblock %}
+

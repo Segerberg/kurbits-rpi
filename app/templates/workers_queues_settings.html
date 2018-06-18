@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block pageHeader %}
+<i class="fa fa-cogs fa-fw"></i> SYSTEM SETTINGS
+
+{% endblock %}
+
+{% block content %}
+
+<div class="col-lg-8">
+     {% if workers == []%}
+     <div class="panel panel-danger">
+     {% else %}
+    <div class="panel panel-success">
+        {% endif%}
+        <div class="panel-heading"><a data-toggle="collapse" href="#collapse3">
+            <i class="fa fa-cog fa-fw"></i> Workers</a>
+        </div>
+        <div id="collapse3" class="panel-collapse collapse in">
+            <div class="panel-body">
+                <div class="list-group">
+                     {% if workers == []%}
+                     Hmmm... No workers alive, please start a worker.py and <a href="{{ url_for('index')}}">reload</a> this page!
+                     {% else %}
+                    <table class="table table-bordered">
+                        <tr>
+                            <th>Worker</th>
+                            <th>Alive Since</th>
+                            <th>Successful jobs</th>
+                            <th>Failed jobs</th>
+                            <th>Working time</th>
+                        </tr>
+                        {% for worker in workers %}
+                         <tr>
+                             <td>{{worker.name}}</td>
+                             {%if worker.birth_date%}<td>{{worker.birth_date.strftime('%Y-%m-%d %H:%M:%S')}}</td> {%else%}<td>N/A</td>{% endif %}
+                             <td>{{worker.successful_job_count}}</td>
+                             <td>{{worker.failed_job_count}}</td>
+                             <td>{{worker.total_working_time}}</td>
+
+
+                         </tr>
+                         {% endfor %}
+
+                    </table>
+                    {% endif%}
+
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<div class="col-lg-4">
+    <div class="panel panel-default">
+        <div class="panel-heading"><a data-toggle="collapse" href="#collapse4">
+            <i class="fa fa-align-left fa-fw"></i> Queues</a>
+        </div>
+        <div id="collapse4" class="panel-collapse collapse in">
+            <div class="panel-body">
+                 <table id="stopWordTable" class="table table-bordered">
+                        <tr>
+                            <th>Queue</th>
+                            <th>Jobs</th>
+                            <th>Action</th>
+                        </tr>
+                      <tr>
+                        <td>Twitter archive jobs</td>
+                        <td><span class="badge">{{qlen}}</span></td>
+                        <td><a href="{{ url_for('clearQueue', type='archive') }}" class="btn btn-danger btn-xs pull-right" role="button" ><i class="fa fa-ban fa-fw"></i></a></td>
+                    </tr>
+                         <tr>
+                        <td>Internal jobs</td>
+                        <td><span class="badge">{{intqlen}}</span></td>
+                        <td><a href="{{ url_for('clearQueue', type='internal') }}" class="btn btn-danger btn-xs pull-right" role="button" ><i class="fa fa-ban fa-fw"></i></a></td>
+                    </tr>
+                 </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>$('.collapse').collapse()</script>
+
+{% endblock %}
+
