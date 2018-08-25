@@ -111,11 +111,13 @@ class TRENDS_LOC(db.Model):
     schedule = db.Column(db.String(250))
     scheduleInterval = db.Column(db.Integer)
     scheduleText = db.Column(db.String(250))
+    woeid = db.Column(db.String(50))
     trends = db.relationship("TWITTER_TRENDS", backref='twitter_trends', lazy=True, cascade="save-update, merge, delete")
 
-    def __init__(self,name, loc, schedule, scheduleInterval,scheduleText):
+    def __init__(self,name, loc, woeid):
         self.name = name
         self.loc = loc
+        self.woeid = woeid
 
 class TWITTER_TRENDS(db.Model):
     __tablename__ = 'TWITTER_TRENDS'
@@ -180,9 +182,6 @@ class CRAWLLOG(db.Model):
             'tag_title': self.tag_title,
             'event_text': self.event_text,
             'event_start': self.event_start.strftime("%Y-%m-%dT%H:%M:%S")}
-
-
-
 
 
 class SEARCH(db.Model):

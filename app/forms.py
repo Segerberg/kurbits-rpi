@@ -58,6 +58,9 @@ class SearchForm(FlaskForm):
 class twitterTrendForm(FlaskForm):
     geoloc = StringField(u'Geo Location', validators=[DataRequired(),Regexp(message='Not a valid geolocation, sorry.',regex="^[-+]?([1-8]?\d(\.\d+)?|90(\.0+)?),\s*[-+]?(180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?)$")])
 
+class twitterTrendWoeidForm(FlaskForm):
+    woeidCode = StringField(u'WOEID code', validators=[DataRequired(),Regexp(message='Not a valid WOEID, sorry.',regex="[1-9][0-9]{0,9}")])
+
 
 class stopWordsForm(FlaskForm):
     stopWord = StringField(u'Stop Word', validators=[DataRequired()])

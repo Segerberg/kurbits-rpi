@@ -5,33 +5,18 @@
 
 {% endblock %}
 
-{% block pageHeader %}<i class="fa fa-line-chart fa-fw"></i>TRENDS{% endblock %}
-
-{% block content %}
-<script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>
-<div class="col-lg-12">
-
-    <div class="panel panel-default">
-        <div class="panel-heading clearfix"><a data-toggle="collapse" href="#collapse1">
-            <i class="fa fa-globe fa-fw"></i> Trend map</a>
-             <div class="btn-group pull-right">
-                     <button type="button" class="btn btn-primary btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Actions <span class="caret"></span></button>
+{% block pageHeader %}<i class="fas fa-chart-line fa-fw"></i>TRENDS <div class="btn-group pull-right">
+                     <button type="button" class="btn btn-primary  dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Actions <span class="caret"></span></button>
                      <ul class="dropdown-menu">
-                         <li><a data-toggle="modal" href="#trendModal" data-target="#trendModal"><i class="fa fa-globe fa-fw"></i> Add Location</a></li>
+                         <li><a data-toggle="modal" href="#trendModal" data-target="#trendModal"><i class="fa fa-plus fa-fw"></i> Coordinates</a></li>
+                         <li><a data-toggle="modal" href="#woeidModal" data-target="#woeidModal"><i class="fa fa-plus fa-fw"></i> WOEID</a></li>
                          <li><a href="{{ url_for('refreshtwittertrend')}}"><i class="fas fa-sync fa-fw"></i> Refresh</a></li>
                      </ul>
-                 </div>
+                 </div>{% endblock %}
+
+{% block content %}
 
 
-        </div>
-        <div id="collapse1" class="panel-collapse">
-            <div class="panel-body">
-                <div id="map" style="height: 400px;"></div>
-
-            </div>
-        </div>
-    </div>
-</div>
 <h5><div class="modal fade" id="trendModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -57,6 +42,33 @@
         </form>
     </div>
 </div></h5>
+
+<h5><div class="modal fade" id="woeidModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="woeidModalLabel"><i class="fas fa-chart-line fa-fw" aria-hidden="true"></i> ADD WOEID</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <form action="" method="post" name="auth_name">
+                        {{ woeidForm.hidden_tag() }}
+                        <label for="title"data-toggle="popover" title="WOEID" data-placement="left" data-content="woeid">WOEID</label>
+                        {{woeidForm.woeidCode(class="form-control",id="woeidCode")}}
+                </div>
+
+                <hr>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                <input class="btn btn-default" type="submit" value="Save">
+            </div>
+        </div>
+        </form>
+    </div>
+</div></h5>
+
 <!--modal timeline -->
 <div id="tweetTimeline" class="modal fade">
   <div class="modal-dialog">
@@ -120,36 +132,8 @@
     </div>
 </div>
 {%endfor%}
-<style>
-.custom .leaflet-popup-tip,
-.custom .leaflet-popup-content-wrapper {
-     max-width: 200px;
-    height: 200px;
-    overflow-y: scroll;
-}
-</style>
-<script>
-
-    var map = L.map('map', {scrollWheelZoom:false}).setView([{{MAP_VIEW}}], {{MAP_ZOOM}});
-
-    L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-    }).addTo(map);
 
 
-
-    var customOptions =
-        {
-        'maxWidth': '500',
-        'className' : 'custom'
-        }
-
-    {%for l in loc %}
-    var customPopup = "<strong>{{l.name}}</strong><br>{%for t in trend %}{% if t.trend_loc == l.row_id and t.silence == False %}<br>{{t.name}}{%endif%}{%endfor%}";
-
-    L.marker([{{l.loc}}]).bindPopup(customPopup,customOptions).addTo(map);
-     {% endfor %}
-</script>
 
 <script>$('.collapse').collapse()</script>
 <script>

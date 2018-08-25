@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 from app import app, render_template, request,db, url_for, redirect,flash,Response,jsonify, send_from_directory,g
 from app import models
-from .forms import twitterTargetForm, twitterTargetUserForm, SearchForm, twitterCollectionForm, collectionAddForm, twitterTrendForm, stopWordsForm, scheduleForm,SCHEDULE_CHOICES, passwordForm, collectionTypeForm, langCodeForm, networkForm,credForm
+from .forms import twitterTargetForm, twitterTargetUserForm, SearchForm, twitterCollectionForm, collectionAddForm, twitterTrendForm, stopWordsForm, scheduleForm,SCHEDULE_CHOICES, passwordForm, collectionTypeForm, langCodeForm, networkForm,credForm,twitterTrendWoeidForm
 from sqlalchemy.exc import IntegrityError
 from .twarcUIarchive import twittercrawl
 from .twitterTrends import getTrends
@@ -161,8 +161,6 @@ def twittertargetsclosed(page=1):
     if request.method == 'POST'and form.validate_on_submit():
 
         try:
-
-
             addTarget = models.TWITTER(title=form.title.data, searchString='',searchLang=None, creator=form.creator.data, targetType='User',
                                        description=form.description.data, subject=form.subject.data, status=form.status.data,lastCrawl=None, totalTweets=0,
                                        added=datetime.now(), woeid=None, index=form.index.data, schedule=None, scheduleInterval=None, scheduleText = None,
@@ -192,23 +190,32 @@ def twittertrends():
     trend = models.TWITTER_TRENDS.query.filter(models.TWITTER_TRENDS.collected > filterTime).all()
     trendAll = models.TWITTER_TRENDS.query.order_by(models.TWITTER_TRENDS.collected.desc()).all()
     trendForm = twitterTrendForm(prefix='trendform')
+    woeidForm =twitterTrendWoeidForm(prefix='woeidForm')
+
     form = twitterTargetForm(prefix='form')
     schedForm = scheduleForm(prefix='schedForm')
 
+    if request.method == 'POST' and woeidForm.validate_on_submit():
+        addloc = models.TRENDS_LOC(name=None, loc=None, woeid=woeidForm.woeidCode.data)
+        db.session.add(addloc)
+        db.session.commit()
+        eq.enqueue(getTrends)
+        return redirect((url_for('twittertrends')))
 
 
     if request.method == 'POST' and trendForm.validate_on_submit():
-        addloc = models.TRENDS_LOC(name=None,loc=trendForm.geoloc.data,schedule=None, scheduleInterval=None, scheduleText=None)
+        addloc = models.TRENDS_LOC(name=None,loc=trendForm.geoloc.data, woeid=None)
         db.session.add(addloc)
         db.session.commit()
         eq.enqueue(getTrends)
         flash(u'Trend location added!', 'success')
         return redirect((url_for('twittertrends')))
+
     if request.method == 'POST' and not trendForm.validate_on_submit():
         flash(u'Not a valid location!', 'danger')
         return redirect((url_for('twittertrends')))
 
-    return render_template("trends.html", loc=loc, trend=trend, trendForm=trendForm, form=form, trendAll=trendAll, MAP_VIEW = MAP_VIEW, MAP_ZOOM=MAP_ZOOM)
+    return render_template("trends.html", loc=loc, trend=trend, trendForm=trendForm, form=form, woeidForm = woeidForm, trendAll=trendAll, MAP_VIEW = MAP_VIEW, MAP_ZOOM=MAP_ZOOM)
 
 
 
@@ -1090,6 +1097,7 @@ def vocabs():
 @app.route('/dbstorage', methods=['GET', 'POST'])
 @auth.login_required
 def dbstorage():
+    dbExports = models.EXPORTS.query.filter(models.EXPORTS.type=='db').all()
     diskList = []
     for mountPoint in psutil.disk_partitions():
         x = dict(p=psutil.disk_usage(mountPoint[1])[3], n=mountPoint[0], m=mountPoint[1],
@@ -1097,7 +1105,7 @@ def dbstorage():
         print(x)
         print(mountPoint[1])
         diskList.append(x)
-    return render_template("db_storage_settings.html",diskList=diskList)
+    return render_template("db_storage_settings.html",diskList=diskList, dbExports=dbExports)
 
 '''DB / STORAGE SETTINGS ROUTE'''
 @app.route('/workersqueues', methods=['GET', 'POST'])
