@@ -62,33 +62,31 @@
                                 <div class="tab-pane fade in active" id="backup">
                                     <h4>Backup and restore database</h4>
                                     <p><a href="{{ url_for('backupDB')}}"  class="btn btn-success btn-xs" role="button" > Backup Now <i class="fa fa-save fa-fw"></i> </a></p>
-                                    <table class="table table-bordered">
-                     <thead>
-                     <tr>
-                         <th><i class="fas fa-clock fa-fw"></i> Time</th>
-                         <th><i class="fa fa-rocket fa-fw"></i> Actions</th>
+                                    <table class="table table-striped table-bordered">
+                             <thead>
+                                 <tr>
+                                     <th>File</th>
+                                     <th>Size</th>
+                                     <th>Date</th>
+                                     <th>Action</th>
 
-                     </tr>
-                     </thead>
-                     <tbody>
-                     {% for EXPORT in dbExports %}
-                     <tr>
+                                 </tr>
+                             </thead>
+                             <tbody>
+                             {% for f in fileList %}
+                             <tr>
+                                 <td>{{f.fname}}</td>
+                                 <td>{{f.fsize}}</td>
+                                 <td>{{f.fdate}}</td>
+                                 <td><a href="{{ url_for('backup_dir', filename=f.fname) }}"><i class="fa fa-download fa-fw"></i> </a></i>
+                                     <a href="{{ url_for('deletebackup', filename=f.fname) }}" onclick="return confirm('Are you sure you want to delete?')"><i class="fa fa-trash fa-fw"></i></a>
 
-                         {% if EXPORT.exported == None %}
-                         <td>N/A</td>
-                         {% else %}
-                         <td>{{ EXPORT.exported.strftime('%Y-%m-%d %H:%M:%S')}}</td>
-                         <td>
-                             <a href="{{ url_for('export', filename=EXPORT.url)}}" target="_blank"><i class="fa fa-download fa-fw"></i> </a>
-                             <a href="{{ url_for('deleteexport', filename=EXPORT.url)}}"><i class="fa fa-trash fa-fw"></i></a>
-                         </td>
-                         {% endif %}
+                                 </td>
 
-
-                     </tr>
+                             </tr>
                              {% endfor %}
-                     </tbody>
-                 </table>
+                             </tbody>
+                         </table>
                                 </div>
                                 <div class="tab-pane fade" id="maintenance">
 
