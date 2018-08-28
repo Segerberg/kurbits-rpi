@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 from app import app, render_template, request,db, url_for, redirect,flash,Response,jsonify, send_from_directory,g
 from app import models
-from .forms import twitterTargetForm, twitterTargetUserForm, SearchForm, twitterCollectionForm, collectionAddForm, twitterTrendForm, stopWordsForm, scheduleForm,SCHEDULE_CHOICES, passwordForm, collectionTypeForm, langCodeForm, networkForm,credForm,twitterTrendWoeidForm
+from .forms import twitterTargetForm, twitterTargetUserForm, SearchForm, twitterCollectionForm, collectionAddForm, twitterTrendForm, stopWordsForm, scheduleForm,SCHEDULE_CHOICES, passwordForm, collectionTypeForm, langCodeForm, networkForm,credForm,twitterTrendWoeidForm, indexTweetForm
 from sqlalchemy.exc import IntegrityError
 from .twarcUIarchive import twittercrawl
 from .twitterTrends import getTrends
@@ -10,13 +10,14 @@ from .getFollowers import Followers
 from .hashtags import hashTags, hashTagsCollection
 from .topusers import topUsers, topUsersCollection
 from .dehydrate import dehydrateUserSearch,dehydrateCollection
+from .index_tweets import indexUserSearch
 from .wordcloud import wordCloud, wordCloudCollection
 from .urls import urlsUserSearch, urlsCollection
 from .tweets2csv import csvUserSearch, csvCollection
 from.network import networkUserSearch
 from .scheduleCollection import startScheduleCollectionCrawl
 from .IA_save import push, pushAccount
-from config import POSTS_PER_PAGE, REDIS_DB, MAP_VIEW,MAP_ZOOM,TARGETS_PER_PAGE,EXPORTS_BASEDIR,ARCHIVE_BASEDIR, TREND_UPDATE, SQLALCHEMY_DATABASE_URI
+from config import POSTS_PER_PAGE, REDIS_DB, MAP_VIEW,MAP_ZOOM,TARGETS_PER_PAGE,EXPORTS_BASEDIR,ARCHIVE_BASEDIR, TREND_UPDATE, SQLALCHEMY_DATABASE_URI, BACKUP_BASEDIR
 from datetime import datetime, timedelta
 from redis import Redis
 from rq import Queue
@@ -31,7 +32,7 @@ import sqlalchemy
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 import subprocess
 from .decorators import async
-from .scripts import humansize, delIndex, vac, backup_db
+from .scripts import humansize, delIndex, vac, backup_db, deleteindextweets
 auth = HTTPBasicAuth()
 q = Queue(connection=Redis())
 eq = Queue('internal',connection=Redis())
@@ -527,6 +528,7 @@ def twittertargetDetail(id):
     form.searchLang.choices = langChoices
     assForm = collectionAddForm(prefix="assForm")
     netForm = networkForm(prefix="netForm")
+    indexForm = indexTweetForm(prefix='indexForm')
     linkedCollections = models.TWITTER.query. \
         filter(models.TWITTER.row_id == id). \
         first(). \
@@ -551,6 +553,11 @@ def twittertargetDetail(id):
         object.tags.append(assForm.assoc.data)
         db.session.commit()
         return redirect(url_for('twittertargetDetail', id=id))
+
+    if request.method == 'POST' and indexForm.validate_on_submit():
+        eq.enqueue(indexUserSearch, id=id, dateStart=indexForm.inclDateStart.data,
+                   dateStop=indexForm.inclDateEnd.data, RT=indexForm.retweets.data)
+
 
     if request.method == 'POST' and netForm.validate_on_submit():
         if netForm.min_subgraph_size.data:
@@ -603,7 +610,7 @@ def twittertargetDetail(id):
 
         return redirect(url_for('twittertargetDetail', id=id, ref=ref))
 
-    return render_template("twittertargetdetail.html", TWITTER=TWITTER, fileList = sortedFilelist, form=form, userForm=userForm,netForm=netForm, CRAWLLOG=CRAWLLOG, EXPORTS=EXPORTS, SEARCH = SEARCH, SEARCH_SEARCH=SEARCH_SEARCH,linkedCollections=linkedCollections, assForm=assForm, l=l, ref = request.referrer)
+    return render_template("twittertargetdetail.html", TWITTER=TWITTER, fileList = sortedFilelist, form=form, userForm=userForm,netForm=netForm, indexForm = indexForm, CRAWLLOG=CRAWLLOG, EXPORTS=EXPORTS, SEARCH = SEARCH, SEARCH_SEARCH=SEARCH_SEARCH,linkedCollections=linkedCollections, assForm=assForm, l=l, ref = request.referrer)
 
 
 '''
@@ -751,6 +758,15 @@ def addCollectionAssociation(id, target):
     db.session.commit()
 
     return redirect(url_for('collectionDetail', id=id, page=1))
+
+"""Route to delete indexed tweets"""
+@app.route('/deleteindextweets/<id>')
+def dltIndexTweets(id):
+    eq.enqueue(deleteindextweets, id)
+    flash(u'Removing indexed tweets for target!', 'success')
+    return redirect(request.referrer)
+
+
 
 
 '''
@@ -1018,6 +1034,15 @@ def export(filename):
     return send_from_directory(app.config['EXPORTS_BASEDIR'],
                                filename)
 '''
+Route to send backups  
+'''
+@app.route('/backups/<filename>')
+@auth.login_required
+def backup_dir(filename):
+    return send_from_directory(app.config['BACKUP_BASEDIR'],
+                               filename)
+
+'''
 Route to send from archive dir
 '''
 @app.route('/archivedir/<id>/<filename>')
@@ -1026,6 +1051,19 @@ def archivedir(id,filename):
     object = models.TWITTER.query.get_or_404(id)
     return send_from_directory(os.path.join(app.config['ARCHIVE_BASEDIR'],object.title),
                                filename)
+
+'''
+Route to delete backups 
+'''
+@app.route('/deletebackup/<filename>')
+@auth.login_required
+def deletebackup(filename):
+    try:
+        os.remove(os.path.join(app.config['BACKUP_BASEDIR'],filename))
+        flash(u'backup file deleted!', 'success')
+    except:
+        flash(u'Sorry could not delete backup', 'danger')
+    return redirect(request.referrer)
 
 '''
 Route to delete exports  
@@ -1102,10 +1140,24 @@ def dbstorage():
     for mountPoint in psutil.disk_partitions():
         x = dict(p=psutil.disk_usage(mountPoint[1])[3], n=mountPoint[0], m=mountPoint[1],
                  f=str(psutil.disk_usage(mountPoint[1])[2] / (1024.0 ** 3)))
-        print(x)
-        print(mountPoint[1])
         diskList.append(x)
-    return render_template("db_storage_settings.html",diskList=diskList, dbExports=dbExports)
+
+    fileList = []
+    try:
+        for filename in os.listdir(os.path.join(BACKUP_BASEDIR)):
+            if filename.endswith(".sql"):
+                try:
+                    mtime = os.path.getmtime(os.path.join(BACKUP_BASEDIR, filename))
+                except OSError:
+                    mtime = 0
+                last_modified_date = datetime.fromtimestamp(mtime)
+                y = dict(fname=filename,
+                         fsize=humansize(os.path.getsize(os.path.join(BACKUP_BASEDIR, filename))),
+                         fdate=last_modified_date)
+                fileList.append(y)
+    except:
+        pass
+    return render_template("db_storage_settings.html",diskList=diskList, dbExports=dbExports, fileList=fileList)
 
 '''DB / STORAGE SETTINGS ROUTE'''
 @app.route('/workersqueues', methods=['GET', 'POST'])

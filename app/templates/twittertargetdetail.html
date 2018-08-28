@@ -25,6 +25,9 @@
                          <li><a href="{{ url_for('startTwitterCrawl', id=TWITTER.row_id) }}"><i class="fa fa-download fa-fw"></i> Archive</a></li>
                          <li><a data-toggle="modal" href="#myModal" data-target="#myModal"><i class="fas fa-pencil-alt fa-fw"></i> Edit</a></li>
                          <li role="separator" class="divider"></li>
+                         <li><a data-toggle="modal" href="#indexModal" data-target="#indexModal"><i class="fas fa-indent"></i> Index</a></li>
+                         <li><a data-toggle="modal" href="{{ url_for('dltIndexTweets', id=TWITTER.row_id) }}"> <i class="far fa-eye-slash"></i> Clear Index</a></li>
+                         <li role="separator" class="divider"></li>
                          <li><a href="{{ url_for('removeTwitterTarget', id=TWITTER.row_id) }}" onclick="return confirm('Are you sure you want to delete?')"><i class="fa fa-trash fa-fw"></i> Delete</a></li>
                      </ul>
                  </div>
@@ -325,13 +328,13 @@
                          <td>{{ia.ia_cap_date.strftime('%Y-%m-%d %H:%M')}}</td>
                      <td>{{ia.ia_cap_count}}</td>
 
-                         <td><a href="{{ url_for('IA_Push', id=ia.row_id, type='tweet')}}" class="btn btn-default btn-xs"><i class="fa fa-sign-in fa-fw"></i>Push</a></td>
+                         <td><a href="{{ url_for('IA_Push', id=ia.row_id, type='tweet')}}" class="btn btn-default btn-xs"><i class="fas fa-sign-in-alt fa-fw"></i> Push</a></td>
                      </tr>
                      {% endfor %}
                      {% endif %}
                      </tbody>
                  </table>
-                     <a href="{{ url_for('IA_tweets', id=TWITTER.title, page=1)}}" class="btn btn-default btn-xs"><i class="fa fa-eye fa-fw"></i>View all</a></td>
+                     <a href="{{ url_for('IA_tweets', id=TWITTER.title, page=1)}}" class="btn btn-default btn-xs"><i class="fa fa-eye fa-fw"></i> View all</a></td>
                  </div>
              </div>
          </div>
@@ -412,6 +415,45 @@
 
 
  </div>
+ <h5><div class="modal fade" id="indexModal" tabindex="-1" role="dialog" aria-labelledby="indexModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="indexModalLabel"><i class="fas fa-indent"></i></i> Index tweets</h4>
+            </div>
+            <div class="modal-body">
+
+                    <form action="" method="post" name="auth_name">
+                        {{ indexForm.hidden_tag() }}
+
+
+
+                <div class="form-group">
+                                    <label for="description" data-toggle="popover" title="Exclude Retweets" data-placement="left" data-content="TBD">Exclude retweets</label>
+                                    {{indexForm.retweets(class="form-control", id="description")}}
+                                </div>
+                <div class="form-group">
+                                    <label for="description" data-toggle="popover" title="Description" data-placement="left" data-content="TBD">Inclusive date start</label>
+                                    {{indexForm.inclDateStart(class="form-control", id="inclDateStart")}}
+                                </div>
+                <div class="form-group">
+                                    <label for="description" data-toggle="popover" title="Description" data-placement="left" data-content="TBD">Inclusive date end</label>
+                                    {{indexForm.inclDateEnd(class="form-control", id="inclDateEnd")}}
+                                </div>
+
+                <hr>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                <input class="btn btn-default" type="submit" value="Index">
+            </div>
+        </div>
+        </form>
+    </div>
+</div></h5>
+
+
 <h5><div class="modal fade" id="networkModal" tabindex="-1" role="dialog" aria-labelledby="networkModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">

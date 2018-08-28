@@ -1,6 +1,6 @@
 import os
 from app import app, models, db
-from config import SQLALCHEMY_DATABASE_URI, EXPORTS_BASEDIR
+from config import SQLALCHEMY_DATABASE_URI, EXPORTS_BASEDIR, PGUSER, PGPASSWORD, BACKUP_BASEDIR
 import sqlalchemy
 import subprocess
 from subprocess import check_output
@@ -18,6 +18,10 @@ def humansize(nbytes):
         i += 1
     f = ('%.2f' % nbytes).rstrip('0').rstrip('.')
     return '%s %s' % (f, suffixes[i])
+
+def deleteindextweets(id):
+    models.SEARCH.query.filter(models.SEARCH.ia_uri == None).filter(models.SEARCH.source==id).delete()
+    db.session.commit()
 
 
 def delIndex():
@@ -42,9 +46,9 @@ def vac():
 
 def backup_db():
     export_uuid = uuid.uuid4()
-    os.putenv('PGUSER', 'kurbits')
-    os.putenv('PGPASSWORD', 'kurbits')
-    if not os.path.isdir(EXPORTS_BASEDIR):
-        os.makedirs(EXPORTS_BASEDIR)
+    os.putenv('PGUSER', PGUSER)
+    os.putenv('PGPASSWORD', PGPASSWORD)
+    if not os.path.isdir(BACKUP_BASEDIR):
+        os.makedirs(BACKUP_BASEDIR)
 
     subprocess.call(['/home/pi/twarcUI/db_backup.sh'])
