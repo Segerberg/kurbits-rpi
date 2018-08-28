@@ -8,11 +8,24 @@
 
 {% if ref !=None and 'twittertrends' in ref %} <a class="btn btn-warning btn-sm pull-right" href="{{ url_for('twittertrends') }}" role="button"><i class="fa fa-arrow-left fa-fw"></i> Return to trends</a>{% endif %}
 
-{% if TWITTER.targetType == 'User' %}<a href="{{ url_for('userlist',page=1, id=TWITTER.title)}}" class="name">@{{ TWITTER.title }} </a>{%else%}<a href="{{ url_for('searchlist',page=1, id=TWITTER.row_id)}}" class="name">{{ TWITTER.title }} </a>{% endif %}
+{% if TWITTER.targetType == 'User' %} @{{ TWITTER.title }} {%else%} {{ TWITTER.title }} {% endif %}
 
     {% endblock %}
 
 {% block content %}
+<div class="row">
+
+    <div class="col-lg-12">
+{% if searchCount != 0 %}
+{% if TWITTER.targetType == 'User' %}
+<a href="{{ url_for('userlist',page=1, id=TWITTER.title)}}"  class="btn btn-primary btn-sm"> <span class="badge">{{searchCount}}</span> indexed tweets</a>
+    {%else%}
+        <a href="{{ url_for('searchlist',page=1, id=TWITTER.row_id)}}" class="btn btn-primary btn-sm"> <span class="badge">{{searchCount}}</span> indexed tweets  </a>
+        {% endif %}
+        {% endif %}
+        </div>
+</div>
+<br>
 <div class="row">
     <div class="col-lg-12">
         <div class="panel panel-default">
@@ -172,7 +185,7 @@
 
                 </div>
             </div>
-        </div>
+        </>
     </div>
 </div>
 

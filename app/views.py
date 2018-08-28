@@ -522,6 +522,7 @@ def twittertargetDetail(id):
     EXPORTS = models.EXPORTS.query.order_by(models.EXPORTS.row_id.desc()).filter(models.EXPORTS.twitter_id==id)
     SEARCH = models.SEARCH.query.filter(models.SEARCH.username==TWITTER.title).filter(models.SEARCH.ia_uri != None ).limit(5)
     SEARCH_SEARCH = models.SEARCH.query.filter(models.SEARCH.source==id).filter(models.SEARCH.ia_uri != None).limit(5)
+    searchCount =  models.SEARCH.query.filter(models.SEARCH.source == id).count()
     langChoices = [(c.term, c.term) for c in models.VOCABS.query.filter(models.VOCABS.use == 'langcode').order_by(models.VOCABS.term.asc()).all()]
     userForm = twitterTargetUserForm(prefix='userform', obj=object)
     form = twitterTargetForm(prefix='form', obj=object)
@@ -610,7 +611,10 @@ def twittertargetDetail(id):
 
         return redirect(url_for('twittertargetDetail', id=id, ref=ref))
 
-    return render_template("twittertargetdetail.html", TWITTER=TWITTER, fileList = sortedFilelist, form=form, userForm=userForm,netForm=netForm, indexForm = indexForm, CRAWLLOG=CRAWLLOG, EXPORTS=EXPORTS, SEARCH = SEARCH, SEARCH_SEARCH=SEARCH_SEARCH,linkedCollections=linkedCollections, assForm=assForm, l=l, ref = request.referrer)
+    return render_template("twittertargetdetail.html", TWITTER=TWITTER, fileList = sortedFilelist, form=form,
+                           userForm=userForm,netForm=netForm, indexForm = indexForm, CRAWLLOG=CRAWLLOG,
+                           EXPORTS=EXPORTS, SEARCH = SEARCH, SEARCH_SEARCH=SEARCH_SEARCH,searchCount=searchCount ,linkedCollections=linkedCollections,
+                           assForm=assForm, l=l, ref = request.referrer)
 
 
 '''
