@@ -347,7 +347,11 @@
                      {% endif %}
                      </tbody>
                  </table>
+                     {% if TWITTER.targetType == 'User' %}
                      <a href="{{ url_for('IA_tweets', id=TWITTER.title, page=1)}}" class="btn btn-default btn-xs"><i class="fa fa-eye fa-fw"></i> View all</a></td>
+                 {% else %}
+                 <a href="{{ url_for('IA_search_tweets', id=TWITTER.row_id, page=1)}}" class="btn btn-default btn-xs"><i class="fa fa-eye fa-fw"></i> View all</a></td>
+                 {% endif %}
                  </div>
              </div>
          </div>

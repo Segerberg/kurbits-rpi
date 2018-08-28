@@ -481,6 +481,17 @@ def IA_tweets(id,page=1):
     return render_template("ia_tweets.html", results=results, id=id, twitterTarget=twitterTarget)
 
 
+'''Route to view IA archived search-api target tweets '''
+@app.route('/ia_search_tweets/<id>/<int:page>', methods=['GET', 'POST'])
+@auth.login_required
+def IA_search_tweets(id,page=1):
+    twitterTarget = models.TWITTER.query.filter(models.TWITTER.row_id == id).first()
+    results = models.SEARCH.query.filter(models.SEARCH.source == id).filter(models.SEARCH.ia_uri != None).order_by(
+        models.SEARCH.ia_cap_date.desc()).paginate(page, 100, False)
+
+    return render_template("ia_search_tweets.html", results=results, id=id, twitterTarget=twitterTarget)
+
+
 '''Route to view archived user tweets from twitter searches '''
 @app.route('/searchtweets/<id>/<int:page>', methods=['GET', 'POST'])
 @auth.login_required

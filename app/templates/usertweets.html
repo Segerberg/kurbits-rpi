@@ -3,7 +3,11 @@
 {% if twitterTarget.targetType == "Search" %}
 <a href="{{ url_for('twittertargetDetail',  id=twitterTarget.row_id) }}">{{twitterTarget.title}}</a>
 {% else %}
-{% if twitterTarget %}<a href="{{ url_for('twittertargetDetail',  id=twitterTarget.row_id) }}">@{{id}}</a>{% else %} @{{id}} {% endif %} {% if not twitterTarget %}<button class="btn btn-default pull-right" data-toggle="modal" data-target="#myModal">Add</button>{% endif %}
+{% if twitterTarget %}
+
+<a href="{{ url_for('twittertargetDetail',  id=twitterTarget.row_id) }}">@{{id}}</a>{% else %} @{{id}}
+{% endif %}
+{% if not twitterTarget %}<button class="btn btn-default pull-right" data-toggle="modal" data-target="#myModal">Add</button>{% endif %}
 {% endif %}
 
 <!-- Modal -->
