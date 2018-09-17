@@ -620,7 +620,7 @@ def twittertargetDetail(id):
             flash(u'Twitter user account already in database ', 'danger')
             db.session.rollback()
 
-        return redirect(url_for('twittertargetDetail', id=id, ref=ref))
+        return redirect(url_for('twittertargetDetail', id=id))
 
     return render_template("twittertargetdetail.html", TWITTER=TWITTER, fileList = sortedFilelist, form=form,
                            userForm=userForm,netForm=netForm, indexForm = indexForm, CRAWLLOG=CRAWLLOG,
