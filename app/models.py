@@ -23,6 +23,8 @@ class TWITTER(db.Model):
     added = db.Column(db.DateTime)
     woeid = db.Column(db.String(50))
     index = db.Column(db.Boolean)
+    mediaHarvest = db.Column(db.Boolean)
+    urlHarvest = db.Column(db.Boolean)
     schedule = db.Column(db.String(250))
     scheduleInterval = db.Column(db.Integer)
     scheduleText = db.Column(db.String(250))
@@ -39,7 +41,7 @@ class TWITTER(db.Model):
     def __init__(self, title, searchString, searchLang, creator,
                  targetType, description, subject,
                  status, lastCrawl, totalTweets,
-                 added, woeid, index,
+                 added, woeid, index,mediaHarvest,url_harvest,
                  schedule, scheduleInterval,scheduleText,
                  ia_uri,ia_cap_count, ia_cap_date):
         self.title = title
@@ -54,6 +56,8 @@ class TWITTER(db.Model):
         self.added = added
         self.woeid = woeid
         self.index = index
+        self.mediaHarvest = mediaHarvest
+        self.urlHarvest = url_harvest
         self.schedule = schedule
         self.totalTweets = totalTweets
         self.scheduleInterval = scheduleInterval

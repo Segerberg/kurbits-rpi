@@ -42,10 +42,16 @@
                         <label for="status" data-toggle="popover" title="Status" data-placement="left" data-content="TBD">Status</label>
                         {{form.status(class="form-control", id="status")}}
                     </div>
-                    <div class="form-group pull-left">
+                    <div class="form-check">
                         <label for="index" data-toggle="popover" title="tagettype" data-placement="left" data-content="TBD">Index</label>
                         {{form.index(class="form-control", id="index")}}
-                    </div>
+
+                                    <label for="mediaHarvest" data-toggle="popover" title="mediaHarvest" data-placement="left" data-content="TBD">Harvest Media</label>
+                                    {{form.mediaHarvest(class="form-control", id="mediaHarvest")}}
+
+                                    <label for="urlHarvest" data-toggle="popover" title="urlHarvest" data-placement="left" data-content="TBD">Harvest Urls</label>
+                                    {{form.urlHarvest(class="form-control", id="urlHarvest")}}
+                                </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>

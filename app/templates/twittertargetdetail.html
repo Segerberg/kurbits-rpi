@@ -54,17 +54,21 @@
                     <li><b style="color:grey"> Username:</b> {{ TWITTER.title }}</li>
                     <li><b style="color:grey"> Creator:</b> {{ TWITTER.creator }}</li>
                     <li><b style="color:grey"> Keywords:</b> {{ TWITTER.subject }}</li>
-                    <li><b style="color:grey"> Description</b> {{ TWITTER.description }}</li>
-                    <li><b style="color:grey">Status</b> {% if TWITTER.status == '1' %} Active {% else %} Closed {% endif %}</li>
-                    <li><b style="color:grey">Index</b> {{ TWITTER.index }}</li>
+                    <li><b style="color:grey"> Description:</b> {{ TWITTER.description }}</li>
+                    <li><b style="color:grey">Status:</b> {% if TWITTER.status == '1' %} Active {% else %} Closed {% endif %}</li>
+                    <li><b style="color:grey">Index:</b> {{ TWITTER.index }}</li>
+                    <li><b style="color:grey">Harvest Media:</b> {{ TWITTER.mediaHarvest }}</li>
+                    <li><b style="color:grey">Harvest Urls:</b> {{ TWITTER.urlHarvest }}</li>
                     {% else %}
                     <li><b style="color:grey"> Title:</b> {{ TWITTER.title }}</li>
                     <li><b style="color:grey"> Search String:</b> {{ TWITTER.searchString }}</li>
                     <li><b style="color:grey"> Search Language:</b> {% if TWITTER.searchLang %}{{ TWITTER.searchLang }} {% else %} All {% endif %}</li>
                     <li><b style="color:grey"> Keywords:</b> {{ TWITTER.subject }}</li>
-                    <li><b style="color:grey"> Description</b> {{ TWITTER.description }}</li>
-                    <li><b style="color:grey">Status</b> {% if TWITTER.status == '1' %} Active {% else %} Closed {% endif %}</li>
-                    <li><b style="color:grey">Index</b> {{ TWITTER.index }}</li>
+                    <li><b style="color:grey"> Description:</b> {{ TWITTER.description }}</li>
+                    <li><b style="color:grey">Status:</b> {% if TWITTER.status == '1' %} Active {% else %} Closed {% endif %}</li>
+                    <li><b style="color:grey">Index:</b> {{ TWITTER.index }}</li>
+                    <li><b style="color:grey">Harvest Media:</b> {{ TWITTER.mediaHarvest }}</li>
+                    <li><b style="color:grey">Harvest Urls:</b> {{ TWITTER.urlHarvest }}</li>
                     {% endif %}
                 </ul>
                      <hr>
@@ -130,14 +134,25 @@
                                     {{form.subject(class="form-control", id="subject")}}
                                 </div>
                                 <div class="form-group">
+                                     {{form.status(class="form-control", id="status")}}
                                     <label for="status" data-toggle="popover" title="Status" data-placement="left" data-content="TBD">Status</label>
-                                    {{form.status(class="form-control", id="status")}}
+
                                 </div>
-                                <div class="form-group pull-left">
+
+                                <div class="form-check">
                                     <label for="index" data-toggle="popover" title="index" data-placement="left" data-content="TBD">Index</label>
                                     {{form.index(class="form-control", id="index")}}
+
+
+                                    <label for="mediaHarvest" data-toggle="popover" title="mediaHarvest" data-placement="left" data-content="TBD">Harvest Media</label>
+                                    {{form.mediaHarvest(class="form-control", id="mediaHarvest")}}
+
+
+                                    <label for="urlHarvest" data-toggle="popover" title="urlHarvest" data-placement="left" data-content="TBD">Harvest Urls</label>
+                                    {{form.urlHarvest(class="form-control", id="urlHarvest")}}
                                 </div>
-                            </div>
+                                    </div>
+
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
                                 <input class="btn btn-default" type="submit" value="Spara">
@@ -168,9 +183,15 @@
                                     <label for="status" data-toggle="popover" title="Status" data-placement="left" data-content="TBD">Status</label>
                                     {{userForm.status(class="form-control", id="status")}}
                                 </div>
-                                <div class="form-group pull-left">
+                                <div class="form-check">
                                     <label for="index" data-toggle="popover" title="index" data-placement="left" data-content="TBD">Index</label>
                                     {{userForm.index(class="form-control", id="index")}}
+
+                                    <label for="mediaHarvest" data-toggle="popover" title="index" data-placement="left" data-content="TBD">Harvest Media</label>
+                                    {{userForm.mediaHarvest(class="form-control", id="mediaHarvest")}}
+
+                                    <label for="urlHarvest" data-toggle="popover" title="index" data-placement="left" data-content="TBD">Harvest Urls</label>
+                                    {{userForm.urlHarvest(class="form-control", id="urlHarvest")}}
                                 </div>
                             </div>
                             <div class="modal-footer">
@@ -417,6 +438,7 @@
                                  <td>{{f.fdate}}</td>
                                  <td><a href="{{ url_for('deletefile', id=TWITTER.row_id, filename=f.fname) }}" onclick="return confirm('Are you sure you want to delete?')"><i class="fa fa-trash fa-fw"></i></a>
                                  <a href="{{ url_for('archivedir', id=TWITTER.row_id, filename=f.fname) }}"><i class="fa fa-download fa-fw"></i> </a>
+                                 <a href="{{ url_for('mediawarc', id=TWITTER.row_id, filename=f.fname) }}"><i class="fa fa-cloud fa-fw"></i> </a>
                                  </td>
 
                              </tr>

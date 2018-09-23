@@ -17,6 +17,7 @@ from .tweets2csv import csvUserSearch, csvCollection
 from.network import networkUserSearch
 from .scheduleCollection import startScheduleCollectionCrawl
 from .IA_save import push, pushAccount
+from .media2warc import media2warc
 from config import POSTS_PER_PAGE, REDIS_DB, MAP_VIEW,MAP_ZOOM,TARGETS_PER_PAGE,EXPORTS_BASEDIR,ARCHIVE_BASEDIR, TREND_UPDATE, SQLALCHEMY_DATABASE_URI, BACKUP_BASEDIR
 from datetime import datetime, timedelta
 from redis import Redis
@@ -136,7 +137,7 @@ def twittertargets(page=1):
 
             addTarget = models.TWITTER(title=form.title.data, searchString='', searchLang=None,creator=form.creator.data, targetType='User',
                                        description=form.description.data, subject=form.subject.data, status=form.status.data,lastCrawl=None, totalTweets=0,
-                                       added=datetime.now(), woeid=None, index=form.index.data, schedule=None, scheduleInterval=None, scheduleText = None,
+                                       added=datetime.now(), woeid=None, index=form.index.data, mediaHarvest=form.mediaHarvest.data, url_harvest=form.urlHarvest.data,schedule=None, scheduleInterval=None, scheduleText = None,
                                        ia_uri=None, ia_cap_count=0, ia_cap_date=None)
 
             addLog = models.CRAWLLOG(tag_title=form.title.data,event_start=datetime.utcnow(), event_text='Target added',event_description=None)
@@ -164,8 +165,8 @@ def twittertargetsclosed(page=1):
         try:
             addTarget = models.TWITTER(title=form.title.data, searchString='',searchLang=None, creator=form.creator.data, targetType='User',
                                        description=form.description.data, subject=form.subject.data, status=form.status.data,lastCrawl=None, totalTweets=0,
-                                       added=datetime.now(), woeid=None, index=form.index.data, schedule=None, scheduleInterval=None, scheduleText = None,
-                                       ia_uri=None,ia_cap_count=0, ia_cap_date=None)
+                                       added=datetime.now(), woeid=None, index=form.index.data, mediaHarvest=form.mediaHarvest.data,url_harvest=form.urlHarvest.data,
+                                       schedule=None, scheduleInterval=None, scheduleText = None,ia_uri=None,ia_cap_count=0, ia_cap_date=None)
 
             addLog = models.CRAWLLOG(tag_title=form.title.data,event_start=datetime.utcnow(), event_text='Target added',event_description=None)
             addTarget.logs.append(addLog)
@@ -230,7 +231,8 @@ def addtwittertrend(id):
                                    creator='', targetType='Search',
                                    description='[Added from trends]', subject='',
                                    status='1', lastCrawl=None, totalTweets=0,
-                                   added=datetime.now(), woeid=None, index='0',
+                                   added=datetime.now(), woeid=None, index='0',mediaHarvest='0',
+                                   url_harvest='0',
                                    schedule=None, scheduleInterval=None, scheduleText = None,
                                    ia_uri=None,ia_cap_count=0,ia_cap_date=None)
 
@@ -358,6 +360,7 @@ def twittersearchtargets(page=1):
                                        description=form.description.data, subject=form.subject.data,
                                        status=form.status.data, lastCrawl=None, totalTweets=0,
                                        added=datetime.now(), woeid=None, index=form.index.data,
+                                       mediaHarvest=form.mediaHarvest.data,url_harvest=form.urlHarvest.data,
                                        schedule=None, scheduleInterval=None, scheduleText = None,
                                        ia_uri=None,ia_cap_count=0,ia_cap_date=None)
             addLog = models.CRAWLLOG(tag_title=form.title.data, event_start=datetime.utcnow(), event_text='Target added',event_description=None)
@@ -388,7 +391,9 @@ def twittersearchtargetsclosed(page=1):
             addTarget = models.TWITTER(title=form.title.data, searchString=form.searchString.data, searchLang=form.searchLang.data, creator=form.creator.data, targetType='Search',
                                        description=form.description.data, subject=form.subject.data,
                                        status=form.status.data, lastCrawl=None, totalTweets=0,
-                                       added=datetime.now(), woeid=None, index=form.index.data, schedule=None, scheduleInterval=None, scheduleText = None,
+                                       added=datetime.now(), woeid=None, index=form.index.data, mediaHarvest=form.mediaHarvest.data,
+                                       url_harvest=form.urlHarvest.data,
+                                       schedule=None, scheduleInterval=None, scheduleText = None,
                                        ia_uri=None,ia_cap_count=0,ia_cap_date=None)
             addLog = models.CRAWLLOG(tag_title=form.title.data, event_start=datetime.now(), event_text='Target added',event_description=None)
             addTarget.logs.append(addLog)
@@ -453,7 +458,9 @@ def userlist(id,page=1):
             addTarget = models.TWITTER(title=form.title.data,searchString='', searchLang=None,creator=form.creator.data, targetType='User',
                                        description=form.description.data, subject=form.subject.data,
                                        status=form.status.data, lastCrawl=None, totalTweets=0,
-                                       added=datetime.now(), woeid=None, index=form.index.data, schedule=None, scheduleInterval=None , scheduleText = None,
+                                       added=datetime.now(), woeid=None, index=form.index.data,
+                                       mediaHarvest=form.mediaHarvest.data,url_harvest=form.urlHarvest.data,
+                                       schedule=None, scheduleInterval=None , scheduleText = None,
                                        ia_uri=None, ia_cap_count=0,ia_cap_date=None)
 
             addLog = models.CRAWLLOG(tag_title=form.title.data, event_start=datetime.now(), event_text='Target added',event_description=None)
@@ -505,7 +512,9 @@ def searchlist(id, page=1):
             addTarget = models.TWITTER(title=form.title.data,searchString='',searchLang=None ,creator=form.creator.data, targetType='User',
                                        description=form.description.data, subject=form.subject.data,
                                        status=form.status.data, lastCrawl=None, totalTweets=0,
-                                       added=datetime.now(), woeid=None, index=form.index.data, schedule=None, scheduleInterval=None , scheduleText = None,
+                                       added=datetime.now(), woeid=None, index=form.index.data,
+                                       mediaHarvest=form.mediaHarvest.data,url_harvest=form.urlHarvest.data,
+                                       schedule=None, scheduleInterval=None , scheduleText = None,
                                        ia_uri=None, ia_cap_count=0,ia_cap_date=None)
             addLog = models.CRAWLLOG(tag_title=form.title.data, event_start=datetime.now(), event_text='Target added',event_description=None)
             addTarget.logs.append(addLog)
@@ -627,6 +636,18 @@ def twittertargetDetail(id):
                            EXPORTS=EXPORTS, SEARCH = SEARCH, SEARCH_SEARCH=SEARCH_SEARCH,searchCount=searchCount ,linkedCollections=linkedCollections,
                            assForm=assForm, l=l, ref = request.referrer)
 
+'''
+Route to run media2warc harvest
+'''
+@app.route('/mediawarc/<id>/<filename>')
+@auth.login_required
+def mediawarc(id,filename):
+    eq.enqueue(media2warc,id,filename)
+
+    return redirect(url_for('twittertargetDetail', id=id))
+
+
+
 
 '''
 Route to delete tweet json file 
@@ -718,7 +739,9 @@ def collectionDetail(id, page=1):
                                        targetType='User',
                                        description=targetForm.description.data, subject=targetForm.subject.data,
                                        status=targetForm.status.data, lastCrawl=None, totalTweets=0,
-                                       added=datetime.now(), woeid=None, index=targetForm.index.data, schedule=None, scheduleInterval=None, scheduleText = None,
+                                       added=datetime.now(), woeid=None, index=targetForm.index.data,
+                                       mediaHarvest=targetForm.mediaHarvest.data,url_harvest=targetForm.urlHarvest.data,
+                                       schedule=None, scheduleInterval=None, scheduleText = None,
                                        ia_uri=None,ia_cap_count=0,ia_cap_date=None)
 
             addLog = models.CRAWLLOG(tag_title=targetForm.title.data, event_start=datetime.now(), event_text='Target added',event_description=None)
@@ -742,6 +765,7 @@ def collectionDetail(id, page=1):
                                        description=searchApiForm.description.data, subject=searchApiForm.subject.data,
                                        status=searchApiForm.status.data, lastCrawl=None, totalTweets=0,
                                        added=datetime.now(), woeid=None, index=searchApiForm.index.data,
+                                       mediaHarvest=searchApiForm.mediaHarvest.data,url_harvest=searchApiForm.urlHarvest.data,
                                        schedule=None, scheduleInterval=None, scheduleText = None,
                                        ia_uri=None,ia_cap_count=0,ia_cap_date=None)
 

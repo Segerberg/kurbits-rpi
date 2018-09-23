@@ -23,6 +23,8 @@ class twitterTargetForm(FlaskForm):
     subject = StringField(u'Subject')
     status = SelectField(u'Status', choices=[("1", "Active"),("0","Closed")])
     index = BooleanField(u'Index')
+    mediaHarvest = BooleanField(u'Media Harvest')
+    urlHarvest = BooleanField(u'Url Harvest')
 
 class twitterTargetUserForm(FlaskForm):
     title = StringField(u'Title', validators=[DataRequired()])
@@ -32,6 +34,8 @@ class twitterTargetUserForm(FlaskForm):
     subject = StringField(u'Subject')
     status = SelectField(u'Status', choices=[("1", "Active"),("0","Closed")])
     index = BooleanField(u'Index')
+    mediaHarvest = BooleanField(u'Media Harvest')
+    urlHarvest = BooleanField(u'Url Harvest')
 
 class networkForm(FlaskForm):
     users = BooleanField(u'Users')

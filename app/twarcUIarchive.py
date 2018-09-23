@@ -13,11 +13,14 @@ import gzip
 import json
 import twarc
 import logging
-import argparse
-from app import app, models, db, current_app
+from app import app, models, db
+from sqlalchemy.exc import IntegrityError
 from datetime import datetime
 from config import ARCHIVE_BASEDIR,CONSUMER_KEY,CONSUMER_SECRET,ACCESS_TOKEN,ACCESS_SECRET
-
+from redis import Redis
+from rq import Queue
+from .media2warc import media2warc
+eq = Queue('internal',connection=Redis())
 archive_file_fmt = "tweets-%04i.json.gz"
 archive_file_pat = "tweets-(\d+).json.gz$"
 
@@ -84,20 +87,24 @@ def twittercrawl(id):
             tweetCount = tweetCount + 1
 
             if TWITTER.index:
+                try:
+                    add = models.SEARCH(tweet["user"]["name"],
+                                        tweet["user"]["screen_name"],
+                                        tweet["id"],
+                                        tweet["full_text"],
+                                        datetime.strptime(tweet['created_at'], '%a %b %d %H:%M:%S +0000 %Y'),
+                                        TWITTER.row_id,
+                                        tweet['retweet_count'],
+                                        '',
+                                        'twitter',
+                                        None,
+                                        0,
+                                        None)
+                    db.session.add(add)
+                    db.session.commit()
+                except IntegrityError:
+                    db.session.rollback()
 
-                add = models.SEARCH(tweet["user"]["name"],
-                                    tweet["user"]["screen_name"],
-                                    tweet["id"],
-                                    tweet["full_text"],
-                                    datetime.strptime(tweet['created_at'], '%a %b %d %H:%M:%S +0000 %Y'),
-                                    TWITTER.row_id,
-                                    tweet['retweet_count'],
-                                    '',
-                                    'twitter',
-                                    None,
-                                    0,
-                                    None)
-                db.session.add(add)
 
         if fh:
             fh.close()
@@ -107,6 +114,10 @@ def twittercrawl(id):
             addLog = models.CRAWLLOG(tag_title=TWITTER.title, event_start=datetime.now(),
                                      event_text='archived {} tweets'.format(tweetCount),event_description=None)
             TWITTER.logs.append(addLog)
+
+            if TWITTER.mediaHarvest:
+                eq.enqueue(media2warc, TWITTER.row_id, next_archive)
+
             db.session.commit()
         else:
             addLog = models.CRAWLLOG(tag_title=TWITTER.title, event_start=datetime.now(),
@@ -114,6 +125,7 @@ def twittercrawl(id):
             TWITTER.logs.append(addLog)
 
             db.session.commit()
+
 
 
 
