@@ -1,21 +1,4 @@
 #!/usr/bin/env python
-"""
-This utility extracts media urls from tweet jsonl.gz and  save them as warc records.
-
-Warcio (https://github.com/webrecorder/warcio) is a dependency and before you can use it you need to:
-% pip install warcio
-
-You run it like this:
-% python media2warc.py /mnt/tweets/ferguson/tweets-0001.jsonl.gz /mnt/tweets/ferguson/tweets-0001.warc.gz
-
-The input file will be checked for duplicate urls to avoid duplicates within the input file. Subsequent runs
-will  be deduplicated using a sqlite db.  If an identical-payload-digest is found a revist record is created.
-
-The script is able to fetch media resources in multiple threads (maximum 2) by passing --threads <int> (default to a single thread).
-
-Please be careful modifying this script to use more than two threads since it can be interpreted as a DoS-attack.
-
-"""
 import os
 import gzip
 import json
@@ -136,60 +119,8 @@ class Dedup():
         return result
 
 
-def parse_extended_entities(extended_entities_dict):
-    """Parse media file URL:s form tweet data
 
-    :extended_entities_dict:
-    :returns: list of media file urls
-
-    """
-    urls = []
-
-    if "media" in extended_entities_dict.keys():
-        for item in extended_entities_dict["media"]:
-
-            # add static image
-            urls.append(item["media_url_https"])
-
-            # add best quality video file
-            if "video_info" in item.keys():
-                max_bitrate = -1  # handle twitters occasional bitrate=0
-                video_url = None
-                for video in item["video_info"]["variants"]:
-                    if "bitrate" in video.keys() and "content_type" in video.keys():
-                        if video["content_type"] == "video/mp4":
-                            if int(video["bitrate"]) > max_bitrate:
-                                max_bitrate = int(video["bitrate"])
-                                video_url = video["url"]
-
-                if not video_url:
-                    print("Error: No bitrate / content_type")
-                    print(item["video_info"])
-                else:
-                    urls.append(video_url)
-
-    return urls
-
-
-def parse_binlinks_from_tweet(tweetdict):
-    """Parse binary file url:s from a single tweet.
-
-    :tweetdict: json data dict for tweet
-    :returns: list of urls for media files
-
-    """
-
-    urls = []
-
-    if "user" in tweetdict.keys():
-        urls.append(tweetdict["user"]["profile_image_url_https"])
-        urls.append(tweetdict["user"]["profile_background_image_url_https"])
-
-    if "extended_entities" in tweetdict.keys():
-        urls.extend(parse_extended_entities(tweetdict["extended_entities"]))
-    return urls
-
-def media2warc(id, filename):
+def url2warc(id, filename):
     obj = models.TWITTER.query.filter(models.TWITTER.row_id == id).first()
     archive_dir = os.path.join(ARCHIVE_BASEDIR, obj.title)
     tweet_file = os.path.join(ARCHIVE_BASEDIR, obj.title,filename)
@@ -198,12 +129,12 @@ def media2warc(id, filename):
         os.mkdir(archive_dir)
 
     logging.basicConfig(
-        filename=os.path.join(archive_dir, "media_harvest.log"),
+        filename=os.path.join(archive_dir, "url_harvest.log"),
         level=logging.INFO,
         format="%(asctime)s %(levelname)s %(message)s"
     )
     logging.getLogger(__name__)
-    logging.info("Logging media harvest for %s", tweet_file)
+    logging.info("Logging url harvest for %s", tweet_file)
 
     urls = []
     d = Dedup(os.path.join(archive_dir,'dedup.db'))
@@ -220,31 +151,51 @@ def media2warc(id, filename):
 
     for line in tweetfile:
         tweet = json.loads(line)
-        tweet_urls = parse_binlinks_from_tweet(tweet)
-        for url in tweet_urls:
-            if not url in urls:
-                urls.append(url)
-                q.put(url)
-                uniqueUrlCount +=1
-            else:
-                duplicateUrlCount += 1
+        try:
+            for url in tweet["entities"]["urls"]:
+                if 'unshortened_url' in url:
+                    if not url['unshortened_url'] in urls:
+                        urls.append(url['unshortened_url'])
+                        q.put(url['unshortened_url'])
+                        uniqueUrlCount += 1
+                    else:
+                        duplicateUrlCount += 1
 
-    logging.info("Found %s total media urls %s unique and %s duplicates", uniqueUrlCount+duplicateUrlCount, uniqueUrlCount, duplicateUrlCount)
+                elif url.get('expanded_url'):
+                    if not url['expanded_url'] in urls:
+                        urls.append(url['expanded_url'])
+                        q.put(url['expanded_url'])
+                        uniqueUrlCount += 1
+                    else:
+                        duplicateUrlCount += 1
 
-    threads = int(1)
+                elif url.get('url'):
+                    if not url['url'] in urls:
+                        urls.append(url['url'])
+                        q.put(url['url'])
+                        uniqueUrlCount += 1
+                    else:
+                        duplicateUrlCount += 1
 
-    if threads > 2:
-        threads = 2
+        except:
+            continue
+
+    logging.info("Found %s total urls %s unique and %s duplicates", uniqueUrlCount+duplicateUrlCount, uniqueUrlCount, duplicateUrlCount)
+
+    threads = int(3)
+
+
 
     for i in range(threads):
         t = GetResource(q,os.path.join(archive_dir,'dedup.db'))
         t.setDaemon(True)
         t.start()
 
-    wt = WriteWarc(out_queue, os.path.join(archive_dir, '{}.media.warc.gz'.format(filename.replace('.json.gz',''))),os.path.join(archive_dir,'dedup.db'))
+    wt = WriteWarc(out_queue, os.path.join(archive_dir, '{}.urls.warc.gz'.format(filename.replace('.json.gz',''))),os.path.join(archive_dir,'dedup.db'))
     wt.setDaemon(True)
     wt.start()
 
     q.join()
     out_queue.join()
-    logging.info("Finished media harvest in %s", str(timedelta(seconds=(time.time() - start))))
+    logging.info("Finished url harvest in %s", str(timedelta(seconds=(time.time() - start))))
+

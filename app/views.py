@@ -18,6 +18,7 @@ from.network import networkUserSearch
 from .scheduleCollection import startScheduleCollectionCrawl
 from .IA_save import push, pushAccount
 from .media2warc import media2warc
+from .url2warc import url2warc
 from config import POSTS_PER_PAGE, REDIS_DB, MAP_VIEW,MAP_ZOOM,TARGETS_PER_PAGE,EXPORTS_BASEDIR,ARCHIVE_BASEDIR, TREND_UPDATE, SQLALCHEMY_DATABASE_URI, BACKUP_BASEDIR
 from datetime import datetime, timedelta
 from redis import Redis
@@ -556,9 +557,10 @@ def twittertargetDetail(id):
         tags
     l = []
     fileList = []
+    warcList = []
     try:
         for filename in os.listdir(os.path.join(ARCHIVE_BASEDIR,TWITTER.title)):
-            if filename.endswith(".gz"):
+            if filename.endswith("json.gz"):
                 try:
                     mtime = os.path.getmtime(os.path.join(ARCHIVE_BASEDIR,TWITTER.title,filename))
                 except OSError:
@@ -566,9 +568,20 @@ def twittertargetDetail(id):
                 last_modified_date = datetime.fromtimestamp(mtime)
                 x = dict(fname=filename, fsize=humansize(os.path.getsize(os.path.join(ARCHIVE_BASEDIR,TWITTER.title,filename))), fdate=last_modified_date)
                 fileList.append(x)
+            elif filename.endswith("warc.gz"):
+                try:
+                    mtime = os.path.getmtime(os.path.join(ARCHIVE_BASEDIR,TWITTER.title,filename))
+                except OSError:
+                    mtime = 0
+                last_modified_date = datetime.fromtimestamp(mtime)
+                x = dict(fname=filename, fsize=humansize(os.path.getsize(os.path.join(ARCHIVE_BASEDIR,TWITTER.title,filename))), fdate=last_modified_date)
+                warcList.append(x)
+
+
     except:
         pass
     sortedFilelist = sorted(fileList, key=lambda k: k['fname'])
+    sortedWarclist = sorted(warcList, key=lambda k: k['fname'])
 
     if request.method == 'POST' and assForm.validate_on_submit():
         object.tags.append(assForm.assoc.data)
@@ -631,7 +644,7 @@ def twittertargetDetail(id):
 
         return redirect(url_for('twittertargetDetail', id=id))
 
-    return render_template("twittertargetdetail.html", TWITTER=TWITTER, fileList = sortedFilelist, form=form,
+    return render_template("twittertargetdetail.html", TWITTER=TWITTER, fileList = sortedFilelist, warcList=sortedWarclist, form=form,
                            userForm=userForm,netForm=netForm, indexForm = indexForm, CRAWLLOG=CRAWLLOG,
                            EXPORTS=EXPORTS, SEARCH = SEARCH, SEARCH_SEARCH=SEARCH_SEARCH,searchCount=searchCount ,linkedCollections=linkedCollections,
                            assForm=assForm, l=l, ref = request.referrer)
@@ -642,15 +655,69 @@ Route to run media2warc harvest
 @app.route('/mediawarc/<id>/<filename>')
 @auth.login_required
 def mediawarc(id,filename):
-    eq.enqueue(media2warc,id,filename)
+    eq.enqueue(media2warc,id,filename,timeout=86400)
+    flash(u'Started media harvest! ', 'success')
 
     return redirect(url_for('twittertargetDetail', id=id))
 
-
+'''
+Route to run utl2warc harvest for all tweet files
+'''
+@app.route('/allmediawarc/<id>')
+@auth.login_required
+def allmediawarc(id):
+    fileList = []
+    countFiles = 0
+    TWITTER = models.TWITTER.query.get_or_404(id)
+    for filename in os.listdir(os.path.join(ARCHIVE_BASEDIR, TWITTER.title)):
+        if filename.endswith('.media.warc.gz'):
+            fileList.append(filename.replace('.media.warc.gz','.json.gz'))
+    for filename in os.listdir(os.path.join(ARCHIVE_BASEDIR, TWITTER.title)):
+        if filename.endswith('.json.gz') and filename not in fileList:
+            eq.enqueue(media2warc,id,filename,timeout=86400)
+            countFiles += 1
+    if countFiles == 0:
+        flash(u'No new files to harvest! '.format(countFiles), 'warning')
+    else:
+        flash(u'Started media harvest for {} files! '.format(countFiles), 'success')
+    return redirect(url_for('twittertargetDetail', id=id))
 
 
 '''
-Route to delete tweet json file 
+Route to run url2warc harvest
+'''
+@app.route('/urlwarc/<id>/<filename>')
+@auth.login_required
+def urlwarc(id,filename):
+    eq.enqueue(url2warc,id,filename,timeout=86400)
+    flash(u'Started url harvest! ', 'success')
+    return redirect(url_for('twittertargetDetail', id=id))
+
+'''
+Route to run utl2warc harvest for all tweet files
+'''
+@app.route('/allurlwarc/<id>')
+@auth.login_required
+def allurlwarc(id):
+    fileList = []
+    countFiles = 0
+    TWITTER = models.TWITTER.query.get_or_404(id)
+    for filename in os.listdir(os.path.join(ARCHIVE_BASEDIR, TWITTER.title)):
+        if filename.endswith('.urls.warc.gz'):
+            fileList.append(filename.replace('.urls.warc.gz','.json.gz'))
+    for filename in os.listdir(os.path.join(ARCHIVE_BASEDIR, TWITTER.title)):
+        if filename.endswith('.json.gz') and filename not in fileList:
+            eq.enqueue(url2warc,id,filename,timeout=86400)
+            countFiles += 1
+    if countFiles == 0:
+        flash(u'No new files to harvest! '.format(countFiles), 'warning')
+    else:
+        flash(u'Started url harvest for {} files! '.format(countFiles), 'success')
+    return redirect(url_for('twittertargetDetail', id=id))
+
+
+'''
+Route to delete tweet and warc files  
 '''
 @app.route('/deletefile/<id>/<filename>')
 @auth.login_required

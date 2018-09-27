@@ -20,6 +20,7 @@ from config import ARCHIVE_BASEDIR,CONSUMER_KEY,CONSUMER_SECRET,ACCESS_TOKEN,ACC
 from redis import Redis
 from rq import Queue
 from .media2warc import media2warc
+from .url2warc import url2warc
 eq = Queue('internal',connection=Redis())
 archive_file_fmt = "tweets-%04i.json.gz"
 archive_file_pat = "tweets-(\d+).json.gz$"
@@ -116,7 +117,10 @@ def twittercrawl(id):
             TWITTER.logs.append(addLog)
 
             if TWITTER.mediaHarvest:
-                eq.enqueue(media2warc, TWITTER.row_id, next_archive)
+                eq.enqueue(media2warc, TWITTER.row_id, next_archive,timeout=86400)
+
+            if TWITTER.urlHarvest:
+                eq.enqueue(url2warc, TWITTER.row_id, next_archive,timeout=86400)
 
             db.session.commit()
         else:
@@ -125,9 +129,6 @@ def twittercrawl(id):
             TWITTER.logs.append(addLog)
 
             db.session.commit()
-
-
-
 
 
 def get_last_archive(archive_dir):
