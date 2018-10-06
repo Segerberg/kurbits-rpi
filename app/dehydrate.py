@@ -16,13 +16,16 @@ def dehydrateUserSearch(id):
         os.makedirs(EXPORTS_BASEDIR)
     q = models.TWITTER.query.filter(models.TWITTER.row_id == id).first()
     with open(os.path.join(EXPORTS_BASEDIR, 'dehydrate_{}.txt'.format(export_uuid)), 'w+') as f:
-        for filename in os.listdir(os.path.join(ARCHIVE_BASEDIR,q.title)):
+        for filename in os.listdir(os.path.join(ARCHIVE_BASEDIR,q.targetType,q.title[0],q.title)):
             if filename.endswith(".gz"):
-                for line in gzip.open(os.path.join(ARCHIVE_BASEDIR,q.title,filename)):
-                    count = count + 1
-                    tweet = json.loads(line.decode('utf-8'))['id_str']
-                    f.write(tweet)
-                    f.write('\n')
+                for line in gzip.open(os.path.join(ARCHIVE_BASEDIR,q.targetType,q.title[0],q.title,filename)):
+                    try:
+                        count = count + 1
+                        tweet = json.loads(line.decode('utf-8'))['id_str']
+                        f.write(tweet)
+                        f.write('\n')
+                    except:
+                        continue
     addExportRef = models.EXPORTS(url='dehydrate_{}.txt'.format(export_uuid),type='Dehydrate',exported=datetime.now(),count=count)
     q.exports.append(addExportRef)
     db.session.commit()
@@ -43,12 +46,14 @@ def dehydrateCollection(id):
     with open(os.path.join(EXPORTS_BASEDIR,'dehydrate_{}.txt'.format(export_uuid)),'w+') as f:
         for target in linkedTargets:
             print (target.title)
-            for filename in os.listdir(os.path.join(ARCHIVE_BASEDIR,target.title)):
+            for filename in os.listdir(os.path.join(ARCHIVE_BASEDIR,target.targetType,target.title[0],target.title)):
                 if filename.endswith(".gz"):
-                    for line in gzip.open(os.path.join(ARCHIVE_BASEDIR,target.title,filename)):
-
-                        tweet = json.loads(line.decode('utf-8'))
-                        tweetDate = datetime.strptime(tweet['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
+                    for line in gzip.open(os.path.join(ARCHIVE_BASEDIR,target.targetType,target.title[0],target.title,filename)):
+                        try:
+                            tweet = json.loads(line.decode('utf-8'))
+                            tweetDate = datetime.strptime(tweet['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
+                        except:
+                            continue
 
                         if tweetDate > dbDateStart and tweetDate < dbDateStop:
                             count = count + 1

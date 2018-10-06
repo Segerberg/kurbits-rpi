@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import gzip
 import os
 import json
@@ -17,21 +19,24 @@ def urlsUserSearch(id):
         os.makedirs(EXPORTS_BASEDIR)
     q = models.TWITTER.query.filter(models.TWITTER.row_id == id).first()
     with open(os.path.join(EXPORTS_BASEDIR, 'urls_{}.txt'.format(export_uuid)), 'w+') as f:
-        for filename in os.listdir(os.path.join(ARCHIVE_BASEDIR,q.title)):
+        for filename in os.listdir(os.path.join(ARCHIVE_BASEDIR,q.targetType,q.title[0],q.title)):
             if filename.endswith(".gz"):
-                for line in gzip.open(os.path.join(ARCHIVE_BASEDIR,q.title,filename)):
-                    count = count + 1
-                    tweet = json.loads(line.decode('utf-8'))
-                    for url in tweet["entities"]["urls"]:
-                        if 'unshortened_url' in url:
-                            f.write(url['unshortened_url'])
-                            f.write('\n')
-                        elif url.get('expanded_url'):
-                            f.write(url['expanded_url'])
-                            f.write('\n')
-                        elif url.get('url'):
-                            f.write(url['url'])
-                            f.write('\n')
+                for line in gzip.open(os.path.join(ARCHIVE_BASEDIR,q.targetType,q.title[0],q.title,filename)):
+                    try:
+                        count = count + 1
+                        tweet = json.loads(line.decode('utf-8'))
+                        for url in tweet["entities"]["urls"]:
+                            if 'unshortened_url' in url:
+                                f.write(url['unshortened_url'])
+                                f.write('\n')
+                            elif url.get('expanded_url'):
+                                f.write(url['expanded_url'])
+                                f.write('\n')
+                            elif url.get('url'):
+                                f.write(url['url'])
+                                f.write('\n')
+                    except:
+                        continue
 
 
     addExportRef = models.EXPORTS(url='urls_{}.txt'.format(export_uuid),type='Urls',exported=datetime.now(),count=count)
@@ -54,9 +59,9 @@ def urlsCollection(id):
     with open(os.path.join(EXPORTS_BASEDIR,'urls_{}.txt'.format(export_uuid)),'w+') as f:
         for target in linkedTargets:
             print (target.title)
-            for filename in os.listdir(os.path.join(ARCHIVE_BASEDIR,target.title)):
+            for filename in os.listdir(os.path.join(ARCHIVE_BASEDIR,target.targetType,target.title[0],target.title)):
                 if filename.endswith(".gz"):
-                    for line in gzip.open(os.path.join(ARCHIVE_BASEDIR,target.title,filename)):
+                    for line in gzip.open(os.path.join(ARCHIVE_BASEDIR,target.targetType,target.title[0],target.title               ,filename)):
 
 
                         tweet = json.loads(line.decode('utf-8'))

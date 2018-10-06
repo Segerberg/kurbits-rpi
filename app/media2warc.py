@@ -190,9 +190,9 @@ def parse_binlinks_from_tweet(tweetdict):
     return urls
 
 def media2warc(id, filename):
-    obj = models.TWITTER.query.filter(models.TWITTER.row_id == id).first()
-    archive_dir = os.path.join(ARCHIVE_BASEDIR, obj.title)
-    tweet_file = os.path.join(ARCHIVE_BASEDIR, obj.title,filename)
+    TWITTER = models.TWITTER.query.filter(models.TWITTER.row_id == id).first()
+    archive_dir = os.path.join(ARCHIVE_BASEDIR,TWITTER.targetType,TWITTER.title[0],TWITTER.title)
+    tweet_file = os.path.join(ARCHIVE_BASEDIR,TWITTER.targetType,TWITTER.title[0],TWITTER.title, filename)
     start = time.time()
     if not os.path.isdir(archive_dir):
         os.mkdir(archive_dir)
@@ -219,7 +219,7 @@ def media2warc(id, filename):
     logging.info("Checking for duplicate urls")
 
     for line in tweetfile:
-        tweet = json.loads(line)
+        tweet = json.loads(line.decode('utf-8'))
         tweet_urls = parse_binlinks_from_tweet(tweet)
         for url in tweet_urls:
             if not url in urls:

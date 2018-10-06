@@ -135,9 +135,34 @@
                             {% if TARGET.lastCrawl == None %}<td>-</td>{% else %}<td>{{ TARGET.lastCrawl.strftime('%Y-%m-%d')}}</td>{% endif %}
                             <td>{{ TARGET.added.strftime('%Y-%m-%d')}}</td>
                             <td>{{ TARGET.subject}}</td>
-                            {% if TARGET.status == '1' %}<td><form method="post" onclick="return confirm('Are you sure you want to start archiving ?');"action="{{ url_for('startTwitterCrawl', id=TARGET.row_id) }}"><button class="btn btn-success btn-xs pull-left"type="submit">Archive now!</i></button></form></td>{% endif %}
+                            {% if TARGET.status == '1' %}
+                             <td><div class="btn-group">
+                     <button type="button" class="btn btn-primary btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Actions <span class="caret"></span></button>
+                     <ul class="dropdown-menu">
 
-                           {% if TARGET.status == '0' %} <td><form method="post" onclick="return confirm('Are you sure you want to reactivate this target ?');"action="{{ url_for('reactivateTwitterTarget', id=TARGET.row_id) }}"><button class="btn btn-warning btn-xs pull-left"type="submit">Reactivate!</i></button></form></td>{% endif %}
+                        <li><a href="{{ url_for('startTwitterCrawl', id=TARGET.row_id) }}"><i class="fas fa-download fa-fw"></i> Archive Now!</a></li>
+                        <li><a href="{{ url_for('closeTwitterTarget', id=TARGET.row_id) }}"><i class="fas fa-times-circle fa-fw"></i> Close</a></li>
+
+                     </ul>
+                 </div></td>
+
+                            <!--<td><form method="post" onclick="return confirm('Are you sure you want to start archiving ?');"action="{{ url_for('startTwitterCrawl', id=TARGET.row_id) }}"><button class="btn btn-success btn-xs pull-left"type="submit">Archive now!</i></button></form></td>-->
+                            {% endif %}
+
+                           {% if TARGET.status == '0' %}
+                             <td><div class="btn-group">
+                     <button type="button" class="btn btn-primary btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Actions <span class="caret"></span></button>
+                     <ul class="dropdown-menu">
+
+
+                        <li><a href="{{ url_for('reactivateTwitterTarget', id=TARGET.row_id) }}"><i class="fas fa-check-circle fa-fw"></i> Reactivate</a></li>
+                         <li><a href="{{ url_for('removeTwitterTarget', id=TARGET.row_id) }}"><i class="fas fa-trash fa-fw"></i> Delete</a></li>
+
+                     </ul>
+                 </div></td>
+
+
+                            {% endif %}
                         </tr>
                         {% endfor %}
                         </tbody>

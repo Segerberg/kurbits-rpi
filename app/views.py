@@ -26,6 +26,7 @@ from rq import Queue
 from rq.worker import Worker
 from rq_scheduler import Scheduler
 import os
+import shutil
 import psutil
 import uuid
 from flask_httpauth import HTTPBasicAuth
@@ -559,22 +560,23 @@ def twittertargetDetail(id):
     fileList = []
     warcList = []
     try:
-        for filename in os.listdir(os.path.join(ARCHIVE_BASEDIR,TWITTER.title)):
+        for filename in os.listdir(os.path.join(ARCHIVE_BASEDIR,TWITTER.targetType,TWITTER.title[0],TWITTER.title)):
+            print (filename)
             if filename.endswith("json.gz"):
                 try:
-                    mtime = os.path.getmtime(os.path.join(ARCHIVE_BASEDIR,TWITTER.title,filename))
+                    mtime = os.path.getmtime(os.path.join(ARCHIVE_BASEDIR,TWITTER.targetType,TWITTER.title[0],TWITTER.title,filename))
                 except OSError:
                     mtime = 0
                 last_modified_date = datetime.fromtimestamp(mtime)
-                x = dict(fname=filename, fsize=humansize(os.path.getsize(os.path.join(ARCHIVE_BASEDIR,TWITTER.title,filename))), fdate=last_modified_date)
+                x = dict(fname=filename, fsize=humansize(os.path.getsize(os.path.join(ARCHIVE_BASEDIR,TWITTER.targetType,TWITTER.title[0],TWITTER.title,filename))), fdate=last_modified_date)
                 fileList.append(x)
             elif filename.endswith("warc.gz"):
                 try:
-                    mtime = os.path.getmtime(os.path.join(ARCHIVE_BASEDIR,TWITTER.title,filename))
+                    mtime = os.path.getmtime(os.path.join(ARCHIVE_BASEDIR,TWITTER.targetType,TWITTER.title[0],TWITTER.title,filename))
                 except OSError:
                     mtime = 0
                 last_modified_date = datetime.fromtimestamp(mtime)
-                x = dict(fname=filename, fsize=humansize(os.path.getsize(os.path.join(ARCHIVE_BASEDIR,TWITTER.title,filename))), fdate=last_modified_date)
+                x = dict(fname=filename, fsize=humansize(os.path.getsize(os.path.join(ARCHIVE_BASEDIR,TWITTER.targetType,TWITTER.title[0],TWITTER.title,filename))), fdate=last_modified_date)
                 warcList.append(x)
 
 
@@ -582,7 +584,7 @@ def twittertargetDetail(id):
         pass
     sortedFilelist = sorted(fileList, key=lambda k: k['fname'])
     sortedWarclist = sorted(warcList, key=lambda k: k['fname'])
-
+    print (sortedFilelist)
     if request.method == 'POST' and assForm.validate_on_submit():
         object.tags.append(assForm.assoc.data)
         db.session.commit()
@@ -669,10 +671,10 @@ def allmediawarc(id):
     fileList = []
     countFiles = 0
     TWITTER = models.TWITTER.query.get_or_404(id)
-    for filename in os.listdir(os.path.join(ARCHIVE_BASEDIR, TWITTER.title)):
+    for filename in os.listdir(os.path.join(ARCHIVE_BASEDIR,TWITTER.targetType,TWITTER.title[0],TWITTER.title)):
         if filename.endswith('.media.warc.gz'):
             fileList.append(filename.replace('.media.warc.gz','.json.gz'))
-    for filename in os.listdir(os.path.join(ARCHIVE_BASEDIR, TWITTER.title)):
+    for filename in os.listdir(os.path.join(ARCHIVE_BASEDIR,TWITTER.targetType,TWITTER.title[0],TWITTER.title)):
         if filename.endswith('.json.gz') and filename not in fileList:
             eq.enqueue(media2warc,id,filename,timeout=86400)
             countFiles += 1
@@ -702,10 +704,10 @@ def allurlwarc(id):
     fileList = []
     countFiles = 0
     TWITTER = models.TWITTER.query.get_or_404(id)
-    for filename in os.listdir(os.path.join(ARCHIVE_BASEDIR, TWITTER.title)):
+    for filename in os.listdir(os.path.join(ARCHIVE_BASEDIR,TWITTER.targetType,TWITTER.title[0],TWITTER.title)):
         if filename.endswith('.urls.warc.gz'):
             fileList.append(filename.replace('.urls.warc.gz','.json.gz'))
-    for filename in os.listdir(os.path.join(ARCHIVE_BASEDIR, TWITTER.title)):
+    for filename in os.listdir(os.path.join(ARCHIVE_BASEDIR,TWITTER.targetType,TWITTER.title[0],TWITTER.title)):
         if filename.endswith('.json.gz') and filename not in fileList:
             eq.enqueue(url2warc,id,filename,timeout=86400)
             countFiles += 1
@@ -726,9 +728,9 @@ def deletefile(id,filename):
     TWITTER = models.TWITTER.query.get_or_404(id)
     try:
         tweetCount = 0
-        for line in gzip.open(os.path.join(ARCHIVE_BASEDIR, TWITTER.title, filename)):
+        for line in gzip.open(os.path.join(ARCHIVE_BASEDIR,TWITTER.targetType,TWITTER.title[0],TWITTER.title, filename)):
             tweetCount = tweetCount + 1
-        os.remove(os.path.join(ARCHIVE_BASEDIR,TWITTER.title,filename))
+        os.remove(os.path.join(ARCHIVE_BASEDIR,TWITTER.targetType,TWITTER.title[0],TWITTER.title,filename))
         flash(u'Archive file deleted!', 'success')
         addLog = models.CRAWLLOG(tag_title=TWITTER.title, event_start=datetime.now(),
                                  event_text='Archive file deleted',
@@ -881,14 +883,15 @@ Route to remove twitter-target
 @app.route('/removetwittertarget/<id>', methods=['GET','POST'])
 @auth.login_required
 def removeTwitterTarget(id):
-    object = models.TWITTER.query.get_or_404(id)
-    db.session.delete(object)
+    TWITTER = models.TWITTER.query.get_or_404(id)
+    shutil.rmtree(os.path.join(ARCHIVE_BASEDIR,TWITTER.targetType,TWITTER.title[0],TWITTER.title), ignore_errors=True)
+    db.session.delete(TWITTER)
     db.session.commit()
     db.session.close()
     if object.targetType == 'Search':
-        return redirect('/twittersearchtargets/1')
+        return redirect('/twittersearchtargetsclosed/1')
     else:
-        return redirect('/twittertargets/1')
+        return redirect('/twittertargetsclosed/1')
 '''
 Route to reactivate twitter-target
 '''
@@ -903,6 +906,19 @@ def reactivateTwitterTarget(id):
     else:
         return redirect('/twittertargetsclosed/1')
 
+'''
+Route to close twitter-target
+'''
+@app.route('/closetwittertarget/<id>', methods=['GET','POST'])
+@auth.login_required
+def closeTwitterTarget(id):
+    object = models.TWITTER.query.get_or_404(id)
+    object.status = '0'
+    db.session.commit()
+    if object.targetType == 'Search':
+        return redirect('/twittersearchtargets/1')
+    else:
+        return redirect('/twittertargets/1')
 
 '''
 Route to remove collection
@@ -1154,9 +1170,8 @@ Route to send from archive dir
 @app.route('/archivedir/<id>/<filename>')
 @auth.login_required
 def archivedir(id,filename):
-    object = models.TWITTER.query.get_or_404(id)
-    return send_from_directory(os.path.join(app.config['ARCHIVE_BASEDIR'],object.title),
-                               filename)
+    TWITTER = models.TWITTER.query.get_or_404(id)
+    return send_from_directory(os.path.join(ARCHIVE_BASEDIR,TWITTER.targetType,TWITTER.title[0],TWITTER.title, filename))
 
 '''
 Route to delete backups 

@@ -19,10 +19,10 @@ def topUsers(id):
         os.makedirs(EXPORTS_BASEDIR)
     q = models.TWITTER.query.filter(models.TWITTER.row_id == id).first()
     with open(os.path.join(EXPORTS_BASEDIR, 'topusers_{}.txt'.format(export_uuid)), 'w+') as f:
-        for filename in os.listdir(os.path.join(ARCHIVE_BASEDIR,q.title)):
+        for filename in os.listdir(os.path.join(ARCHIVE_BASEDIR,q.targetType,q.title[0],q.title)):
             try:
                 if filename.endswith(".gz"):
-                    for line in gzip.open(os.path.join(ARCHIVE_BASEDIR,q.title,filename)):
+                    for line in gzip.open(os.path.join(ARCHIVE_BASEDIR,q.targetType,q.title[0],q.title,filename)):
                         tweet = json.loads(line.decode('utf-8'))
                         tags.append(tweet['user']['screen_name'])
             except:
@@ -54,10 +54,10 @@ def topUsersCollection(id):
         for target in linkedTargets:
             print (target.title)
             try:
-                for filename in os.listdir(os.path.join(ARCHIVE_BASEDIR,target.title)):
+                for filename in os.listdir(os.path.join(ARCHIVE_BASEDIR,target.targetType,target.title[0],target.title)):
 
                         if filename.endswith(".gz"):
-                            for line in gzip.open(os.path.join(ARCHIVE_BASEDIR,target.title,filename)):
+                            for line in gzip.open(os.path.join(ARCHIVE_BASEDIR,target.targetType,target.title[0],target.title,filename)):
                                 tweet = json.loads(line.decode('utf-8'))
                                 tweetDate = datetime.strptime(tweet['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
                                 if tweetDate > dbDateStart and tweetDate < dbDateStop:

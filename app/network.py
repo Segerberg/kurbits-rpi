@@ -76,9 +76,9 @@ def networkUserSearch(id, users,retweets,min_subgraph_size, max_subgraph_size,ou
         os.makedirs(EXPORTS_BASEDIR)
     q = models.TWITTER.query.filter(models.TWITTER.row_id == id).first()
 
-    for filename in os.listdir(os.path.join(ARCHIVE_BASEDIR,q.title)):
+    for filename in os.listdir(os.path.join(ARCHIVE_BASEDIR,q.targetType,q.title[0],q.title)):
         if filename.endswith(".gz"):
-            for line in gzip.open(os.path.join(ARCHIVE_BASEDIR,q.title,filename)):
+            for line in gzip.open(os.path.join(ARCHIVE_BASEDIR,q.targetType,q.title[0],q.title,filename)):
 
                 try:
                     t = json.loads(line.decode('utf-8'))

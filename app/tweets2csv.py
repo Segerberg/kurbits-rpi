@@ -33,29 +33,32 @@ def csvUserSearch(id):
         values = [value for value in row]
         csv.writerow(values)
 
-        for filename in os.listdir(os.path.join(ARCHIVE_BASEDIR, q.title)):
+        for filename in os.listdir(os.path.join(ARCHIVE_BASEDIR,q.targetType,q.title[0],q.title)):
             if filename.endswith(".gz"):
-                for line in gzip.open(os.path.join(ARCHIVE_BASEDIR, q.title, filename)):
-                    count = count + 1
-                    tweet = json.loads(line.decode('utf-8'))
-                    row = (
-                        tweet['id'],
-                        tweet['created_at'],
-                        tweet['full_text'],
-                        tweet['lang'],
-                        tweet['user']['screen_name'],
-                        tweet['user']['name'],
-                        tweet['user']['id_str'],
-                        tweet['user']['verified'],
-                        tweet['user']['created_at'],
-                        tweet['user']['statuses_count'],
-                        tweet['user']['followers_count'],
-                        tweet['user']['friends_count'],
-                        tweet['user']['time_zone']
+                for line in gzip.open(os.path.join(ARCHIVE_BASEDIR,q.targetType,q.title[0],q.title,filename)):
+                    try:
+                        count = count + 1
+                        tweet = json.loads(line.decode('utf-8'))
+                        row = (
+                            tweet['id'],
+                            tweet['created_at'],
+                            tweet['full_text'],
+                            tweet['lang'],
+                            tweet['user']['screen_name'],
+                            tweet['user']['name'],
+                            tweet['user']['id_str'],
+                            tweet['user']['verified'],
+                            tweet['user']['created_at'],
+                            tweet['user']['statuses_count'],
+                            tweet['user']['followers_count'],
+                            tweet['user']['friends_count'],
+                            tweet['user']['time_zone']
 
-                    )
-                    values = [value for value in row]
-                    csv.writerow(values)
+                        )
+                        values = [value for value in row]
+                        csv.writerow(values)
+                    except:
+                        continue
     addExportRef = models.EXPORTS(url='csv_{}.csv'.format(export_uuid), type='CSV',
                                   exported=datetime.now(), count=count)
     q.exports.append(addExportRef)
@@ -93,31 +96,34 @@ def csvCollection(id):
         values = [value for value in row]
         csv.writerow(values)
         for target in linkedTargets:
-            for filename in os.listdir(os.path.join(ARCHIVE_BASEDIR,target.title)):
+            for filename in os.listdir(os.path.join(ARCHIVE_BASEDIR,target.targetType,target.title[0],target.title)):
                 if filename.endswith(".gz"):
-                    for line in gzip.open(os.path.join(ARCHIVE_BASEDIR,target.title,filename)):
-                        tweet = json.loads(line.decode('utf-8'))
-                        tweetDate = datetime.strptime(tweet['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
-                        if tweetDate > dbDateStart and tweetDate < dbDateStop:
-                            count = count + 1
-                            row = (
-                                tweet['id'],
-                                tweet['created_at'],
-                                tweet['full_text'],
-                                tweet['lang'],
-                                tweet['user']['screen_name'],
-                                tweet['user']['name'],
-                                tweet['user']['id_str'],
-                                tweet['user']['verified'],
-                                tweet['user']['created_at'],
-                                tweet['user']['statuses_count'],
-                                tweet['user']['followers_count'],
-                                tweet['user']['friends_count'],
-                                tweet['user']['time_zone']
+                    for line in gzip.open(os.path.join(ARCHIVE_BASEDIR,target.targetType,target.title[0],target.title,filename)):
+                        try:
+                            tweet = json.loads(line.decode('utf-8'))
+                            tweetDate = datetime.strptime(tweet['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
+                            if tweetDate > dbDateStart and tweetDate < dbDateStop:
+                                count = count + 1
+                                row = (
+                                    tweet['id'],
+                                    tweet['created_at'],
+                                    tweet['full_text'],
+                                    tweet['lang'],
+                                    tweet['user']['screen_name'],
+                                    tweet['user']['name'],
+                                    tweet['user']['id_str'],
+                                    tweet['user']['verified'],
+                                    tweet['user']['created_at'],
+                                    tweet['user']['statuses_count'],
+                                    tweet['user']['followers_count'],
+                                    tweet['user']['friends_count'],
+                                    tweet['user']['time_zone']
 
-                            )
-                            values = [value for value in row]
-                            csv.writerow(values)
+                                )
+                                values = [value for value in row]
+                                csv.writerow(values)
+                        except:
+                            continue
 
     addExportRef = models.EXPORTS(url='csv_{}.csv'.format(export_uuid), type='CSV',
                                   exported=datetime.now(), count=count)

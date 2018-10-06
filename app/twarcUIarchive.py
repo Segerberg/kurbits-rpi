@@ -16,7 +16,7 @@ import logging
 from app import app, models, db
 from sqlalchemy.exc import IntegrityError
 from datetime import datetime
-from config import ARCHIVE_BASEDIR,CONSUMER_KEY,CONSUMER_SECRET,ACCESS_TOKEN,ACCESS_SECRET
+from config import ARCHIVE_BASEDIR
 from redis import Redis
 from rq import Queue
 from .media2warc import media2warc
@@ -31,16 +31,17 @@ def twittercrawl(id):
         #CREDENTIALS = models.CREDENTIALS.query.filter(models.CREDENTIALS.name == 'main').first()
         CREDENTIALS = models.CREDENTIALS.query.one()
         TWITTER = models.TWITTER.query.filter(models.TWITTER.row_id == id).first()
-        if not os.path.isdir(os.path.join(ARCHIVE_BASEDIR,TWITTER.title)):
-            os.makedirs(os.path.join(ARCHIVE_BASEDIR,TWITTER.title))
+        print (TWITTER.targetType)
+        if not os.path.isdir(os.path.join(ARCHIVE_BASEDIR,TWITTER.targetType,TWITTER.title[0],TWITTER.title)):
+            os.makedirs(os.path.join(ARCHIVE_BASEDIR,TWITTER.targetType,TWITTER.title[0],TWITTER.title))
 
         logging.basicConfig(
-            filename=os.path.join(os.path.join(ARCHIVE_BASEDIR,TWITTER.title), "archive.log"),
+            filename=os.path.join(os.path.join(ARCHIVE_BASEDIR,TWITTER.targetType,TWITTER.title[0],TWITTER.title), "archive.log"),
             level=logging.INFO,
             format="%(asctime)s %(levelname)s %(message)s"
         )
 
-        logging.info("logging search for %s to %s", TWITTER.title, os.path.join(ARCHIVE_BASEDIR,TWITTER.title))
+        logging.info("logging search for %s to %s", TWITTER.title, os.path.join(ARCHIVE_BASEDIR,TWITTER.targetType,TWITTER.title[0],TWITTER.title))
 
         t = twarc.Twarc(consumer_key=CREDENTIALS.consumer_key,
                         consumer_secret=CREDENTIALS.consumer_secret,
@@ -50,7 +51,7 @@ def twittercrawl(id):
                         #tweet_mode=args.tweet_mode
                         )
 
-        last_archive = get_last_archive(os.path.join(ARCHIVE_BASEDIR,TWITTER.title))
+        last_archive = get_last_archive(os.path.join(ARCHIVE_BASEDIR,TWITTER.targetType,TWITTER.title[0],TWITTER.title))
         if last_archive:
             last_id = json.loads(next(gzip.open(last_archive, 'rt')))['id_str']
         else:
@@ -72,7 +73,7 @@ def twittercrawl(id):
         else:
             raise Exception("invalid twarc_command")
 
-        next_archive = get_next_archive(os.path.join(ARCHIVE_BASEDIR,TWITTER.title))
+        next_archive = get_next_archive(os.path.join(ARCHIVE_BASEDIR,TWITTER.targetType,TWITTER.title[0],TWITTER.title))
 
         # we only create the file if there are new tweets to save
         # this prevents empty archive files
