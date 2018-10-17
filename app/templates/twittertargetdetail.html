@@ -240,7 +240,8 @@
                      <ul class="dropdown-menu">
                          <li><a href="{{ url_for('dehydrate', id=TWITTER.row_id) }}"><i class="fa fa-tint fa-fw"></i> Dehydrate</a></li>
                          <li><a href="{{ url_for('wordc', id=TWITTER.row_id) }}"><i class="fa fa-cloud fa-fw"></i> Wordcloud</a></li>
-                          {% if TWITTER.targetType == 'User' %}<li><a href="{{ url_for('followers', id=TWITTER.row_id) }}"><i class="fa fa-users fa-fw"></i> Followers</a></li> {% endif %}
+                         <li><a href="{{ url_for('bagit', id=TWITTER.row_id) }}"><i class="fa fa-shopping-bag fa-fw"></i> Bagit</a></li>
+                         {% if TWITTER.targetType == 'User' %}<li><a href="{{ url_for('followers', id=TWITTER.row_id) }}"><i class="fa fa-users fa-fw"></i> Followers</a></li> {% endif %}
                         <li><a href="{{ url_for('hash', id=TWITTER.row_id) }}"><i class="fa fa-hashtag fa-fw"></i> Hashtags</a></li>
                          {% if TWITTER.targetType == 'Search' %} <li><a href="{{ url_for('top_users', id=TWITTER.row_id) }}"><i class="fa fa-user fa-fw"></i> Top Users</a></li> {% endif %}
                          <li><a href="{{ url_for('urls', id=TWITTER.row_id) }}"><i class="fa fa-cloud fa-fw"></i> Urls</a></li>

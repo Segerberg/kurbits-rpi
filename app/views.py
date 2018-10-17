@@ -29,6 +29,7 @@ import os
 import shutil
 import psutil
 import uuid
+from .bagger import bagger
 from flask_httpauth import HTTPBasicAuth
 from werkzeug.security import generate_password_hash, check_password_hash
 import sqlalchemy
@@ -883,15 +884,16 @@ Route to remove twitter-target
 @app.route('/removetwittertarget/<id>', methods=['GET','POST'])
 @auth.login_required
 def removeTwitterTarget(id):
+    deleteindextweets(id)
     TWITTER = models.TWITTER.query.get_or_404(id)
     shutil.rmtree(os.path.join(ARCHIVE_BASEDIR,TWITTER.targetType,TWITTER.title[0],TWITTER.title), ignore_errors=True)
     db.session.delete(TWITTER)
     db.session.commit()
     db.session.close()
-    if object.targetType == 'Search':
-        return redirect('/twittersearchtargetsclosed/1')
+    if TWITTER.targetType == 'Search':
+        return redirect('/twittersearchtargets/1')
     else:
-        return redirect('/twittertargetsclosed/1')
+        return redirect('/twittertargets/1')
 '''
 Route to reactivate twitter-target
 '''
@@ -1006,6 +1008,17 @@ def followers(id):
 
     eq.enqueue(Followers, id, timeout=86400)
     flash(u'Getting followers, please refresh page!', 'success')
+    return redirect(request.referrer)
+
+
+'''
+Route to call followers
+'''
+@app.route('/bagit/<id>', methods=['GET','POST'])
+@auth.login_required
+def bagit(id):
+    eq.enqueue(bagger, id, timeout=86400)
+    flash(u'Bagging!', 'success')
     return redirect(request.referrer)
 
 '''

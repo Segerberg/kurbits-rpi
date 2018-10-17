@@ -31,40 +31,41 @@ def indexUserSearch(id, dateStart, dateStop, RT):
             for line in gzip.open(os.path.join(ARCHIVE_BASEDIR,q.targetType,q.title[0],q.title,filename)):
                 try:
                     tweet = json.loads(line.decode('utf-8'))
-                    try:
-                        add = models.SEARCH(tweet["user"]["name"],
-                                            tweet["user"]["screen_name"],
-                                            tweet["id"],
-                                            tweet["full_text"],
-                                            datetime.strptime(tweet['created_at'], '%a %b %d %H:%M:%S +0000 %Y'),
-                                            q.row_id,
-                                            tweet['retweet_count'],
-                                            '',
-                                            'twitter',
-                                            None,
-                                            0,
-                                            None)
-                        tweetDate = datetime.strptime(tweet['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
+                except:
+                    continue
+                try:
+                    add = models.SEARCH(tweet["user"]["name"],
+                                        tweet["user"]["screen_name"],
+                                        tweet["id"],
+                                        tweet["full_text"],
+                                        datetime.strptime(tweet['created_at'], '%a %b %d %H:%M:%S +0000 %Y'),
+                                        q.row_id,
+                                        tweet['retweet_count'],
+                                        '',
+                                        'twitter',
+                                        None,
+                                        0,
+                                        None)
+                    tweetDate = datetime.strptime(tweet['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
 
 
-                        if tweetDate > dateStart and tweetDate < dateStop:
-                            if RT:
-                                if not 'retweeted_status' in tweet:
-                                    db.session.add(add)
-                                    count = count + 1
-                                    db.session.commit()
-                            else:
+                    if tweetDate > dateStart and tweetDate < dateStop:
+                        if RT:
+                            if not 'retweeted_status' in tweet:
                                 db.session.add(add)
                                 count = count + 1
                                 db.session.commit()
+                        else:
+                            db.session.add(add)
+                            count = count + 1
+                            db.session.commit()
 
 
 
 
-                    except IntegrityError:
-                        db.session.rollback()
-                except:
-                    continue
+                except IntegrityError:
+                    db.session.rollback()
+
     db.session.close()
 
 
